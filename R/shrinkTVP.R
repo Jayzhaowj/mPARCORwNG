@@ -61,20 +61,7 @@
 #' displayed. The default value is \code{TRUE}.
 #' @param ret_beta_nc logical value indicating whether to output the non-centered states in addition to the centered ones.
 #' The default value is \code{FALSE}.
-#' @param sv logical value indicating whether to use stochastic volatility for the error of the observation
-#' equation. For details please see \code{\link{stochvol}}, in particular \code{\link{svsample}}. The default value is
-#' \code{FALSE}.
-#' @param sv_param \emph{optional} named list containing hyperparameter values for the stochastic volatility
-#' parameters. Not all have to be supplied, with those missing being replaced by the default values.
-#' Any list elements that are misnamed will be ignored and a warning will be thrown. Ignored if
-#' \code{sv} is \code{FALSE}. The following elements can be supplied:
-#' \itemize{
-#' \item \code{Bsigma_sv}: positive, real number. The default value is 1.
-#' \item \code{a0_sv}: positive, real number. The default value is 5.
-#' \item \code{b0_sv}: positive, real number. The default value is 1.5.
-#' \item \code{bmu}: real number. The default value is 0.
-#' \item \code{Bmu}: real number. larger than 0. The default value is 1.
-#' }
+#'
 #'
 #' @return The value returned is a list object of class \code{shrinkTVP} containing
 #' \item{\code{sigma2}}{\code{mcmc} object containing the parameter draws from the posterior distribution of \code{sigma2}.
@@ -175,9 +162,7 @@ shrinkTVP <- function(y,
                       c_tuning_par_xi = 1,
                       c_tuning_par_tau = 1,
                       display_progress = TRUE,
-                      ret_beta_nc = FALSE,
-                      sv = FALSE,
-                      sv_param){
+                      ret_beta_nc = FALSE){
 
 
   # Input checking ----------------------------------------------------------
@@ -197,11 +182,11 @@ shrinkTVP <- function(y,
                          nu_tau = 5)
 
   # default sv params
-  default_hyper_sv <- list(Bsigma_sv = 1,
-                            a0_sv = 5,
-                            b0_sv = 1.5,
-                            bmu = 0,
-                            Bmu = 1)
+  #default_hyper_sv <- list(Bsigma_sv = 1,
+  #                          a0_sv = 5,
+  #                          b0_sv = 1.5,
+  #                          bmu = 0,
+  #                          Bmu = 1)
 
   # Change hyperprior values if user overwrites them
   if (missing(hyperprior_param)){
@@ -233,31 +218,31 @@ shrinkTVP <- function(y,
 
 
   # Same procedure for sv_param
-  if (missing(sv_param) | sv == FALSE){
-    sv_param <- default_hyper_sv
-  } else {
-
-    if (is.list(sv_param) == FALSE | is.data.frame(sv_param)){
-      stop("sv_param has to be a list")
-    }
-
-    stand_sv_nam <- names(default_hyper_sv)
-    user_sv_nam <- names(sv_param)
-
-    # Give out warning if an element of the parameter list is misnamed
-    if (any(!user_sv_nam %in% stand_sv_nam)){
-      wrong_nam <- user_sv_nam[!user_sv_nam %in% stand_sv_nam]
-      warning(paste0(paste(wrong_nam, collapse = ", "),
-                     ifelse(length(wrong_nam) == 1, " has", " have"),
-                     " been incorrectly named in sv_param and will be ignored"),
-              immediate. = TRUE)
-    }
-
-    # Merge users' and default values and ignore all misnamed values
-    missing_sv_param <- stand_sv_nam[!stand_sv_nam %in% user_sv_nam]
-    sv_param[missing_sv_param] <- default_hyper_sv[missing_sv_param]
-    sv_param <- sv_param[stand_sv_nam]
-  }
+  # if (missing(sv_param) | sv == FALSE){
+  #   sv_param <- default_hyper_sv
+  # } else {
+  #
+  #   if (is.list(sv_param) == FALSE | is.data.frame(sv_param)){
+  #     stop("sv_param has to be a list")
+  #   }
+  #
+  #   stand_sv_nam <- names(default_hyper_sv)
+  #   user_sv_nam <- names(sv_param)
+  #
+  #   # Give out warning if an element of the parameter list is misnamed
+  #   if (any(!user_sv_nam %in% stand_sv_nam)){
+  #     wrong_nam <- user_sv_nam[!user_sv_nam %in% stand_sv_nam]
+  #     warning(paste0(paste(wrong_nam, collapse = ", "),
+  #                    ifelse(length(wrong_nam) == 1, " has", " have"),
+  #                    " been incorrectly named in sv_param and will be ignored"),
+  #             immediate. = TRUE)
+  #   }
+  #
+  #   # Merge users' and default values and ignore all misnamed values
+  #   missing_sv_param <- stand_sv_nam[!stand_sv_nam %in% user_sv_nam]
+  #   sv_param[missing_sv_param] <- default_hyper_sv[missing_sv_param]
+  #   sv_param <- sv_param[stand_sv_nam]
+  # }
 
   # Check if all numeric inputs are correct
   to_test_num <- list(lambda2 = lambda2,
@@ -271,9 +256,9 @@ shrinkTVP <- function(y,
     to_test_num <- c(to_test_num, hyperprior_param)
   }
 
-  if (missing(sv_param) == FALSE){
-    to_test_num <- c(to_test_num, sv_param[names(sv_param) != "bmu"])
-  }
+  # if (missing(sv_param) == FALSE){
+  #   to_test_num <- c(to_test_num, sv_param[names(sv_param) != "bmu"])
+  # }
 
   bad_inp <- sapply(to_test_num, numeric_input_bad)
 
@@ -288,9 +273,9 @@ shrinkTVP <- function(y,
   }
 
   # Check bmu seperately
-  if (!is.numeric(sv_param$bmu) | !is.scalar(sv_param$bmu)){
-    stop("bmu has to be a single number")
-  }
+  # if (!is.numeric(sv_param$bmu) | !is.scalar(sv_param$bmu)){
+  #   stop("bmu has to be a single number")
+  # }
 
   # Check if all integer inputs are correct
   to_test_int <- list(niter = niter,
@@ -324,7 +309,7 @@ shrinkTVP <- function(y,
                        learn_a_xi = learn_a_xi,
                        learn_a_tau = learn_a_tau,
                        display_progress = display_progress,
-                       sv = sv,
+                       # sv = sv,
                        ret_beta_nc = ret_beta_nc)
 
   bad_bool_inp <- sapply(to_test_bool, bool_input_bad)
@@ -373,8 +358,8 @@ shrinkTVP <- function(y,
   # colnames(x)[colnames(x) == "(Intercept)"] <- "Intercept"
   #
   # d <- dim(x)[2]
-
-  a0 <- rep(0, 2 * 1)
+  n_I <- dim(y)[2]
+  a0 <- rep(0, 2 * n_I^2)
   store_burn <- FALSE
 
 
@@ -413,13 +398,7 @@ shrinkTVP <- function(y,
                           hyperprior_param$nu_tau,
                           display_progress,
                           ret_beta_nc,
-                          store_burn,
-                          sv,
-                          sv_param$Bsigma_sv,
-                          sv_param$a0_sv,
-                          sv_param$b0_sv,
-                          sv_param$bmu,
-                          sv_param$Bmu)
+                          store_burn)
     })
   })
 
@@ -460,17 +439,6 @@ shrinkTVP <- function(y,
     res[["betab_nc"]] <- NULL
   }
 
-  if (sv == TRUE){
-    res[["C0f"]] <- NULL
-    res[["C0b"]] <- NULL
-  } else {
-    res[["svf_mu"]] <- NULL
-    res[["svf_phi"]] <- NULL
-    res[["svf_sigma2"]] <- NULL
-    res[["svb_mu"]] <- NULL
-    res[["svb_phi"]] <- NULL
-    res[["svb_sigma2"]] <- NULL
-  }
 
   if (learn_kappa2 == FALSE){
     res[["kappa2f"]] <- NULL
@@ -530,17 +498,6 @@ shrinkTVP <- function(y,
     priorvals["kappa2"] <- kappa2
   }
 
-  if (sv == TRUE){
-    priorvals["Bsigma_sv"] <- sv_param$Bsigma_sv
-    priorvals["a0_sv"] <- sv_param$a0_sv
-    priorvals["b0_sv"] <- sv_param$b0_sv
-    priorvals["bmu"] <- sv_param$bmu
-    priorvals["Bmu"] <- sv_param$Bmu
-  } else {
-    priorvals["g0"] <- hyperprior_param$g0
-    priorvals["G0"] <- hyperprior_param$G0
-    priorvals["c0"] <- hyperprior_param$c0
-  }
 
   res$priorvals <- priorvals
 #
@@ -658,7 +615,7 @@ shrinkTVP <- function(y,
   attr(res, "niter") <- niter
   attr(res, "nburn") <- nburn
   attr(res, "nthin") <- nthin
-  attr(res, "sv") <- sv
+
   #attr(res, "colnames") <-  colnames(x)
   attr(res, "index") <- zoo::index(y)
 
