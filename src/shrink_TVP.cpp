@@ -10,7 +10,8 @@
 using namespace Rcpp;
 
 // [[Rcpp::export]]
-List do_shrinkTVP(arma::mat y,
+List do_shrinkTVP(arma::mat y_fwd,
+                  arma::mat y_bwd,
                   arma::vec a0,
                   int d,
                   int niter,
@@ -50,8 +51,8 @@ List do_shrinkTVP(arma::mat y,
   Function Rchol = base["chol"];
 
   // Some necessary dimensions
-  int N = y.n_rows;
-  int n_I = y.n_cols;
+  int N = y_fwd.n_rows;
+  int n_I = y_fwd.n_cols;
   int n_I2 = std::pow(n_I, 2);
   int nsave;
   if (store_burn){
@@ -68,10 +69,10 @@ List do_shrinkTVP(arma::mat y,
   int n_T;     // index
 
   // generate forward and backward prediction error
-  arma::cube yf(N, n_I, d, arma::fill::none);
-  arma::cube yb(N, n_I, d, arma::fill::none);
-  yf.slice(0) = y;
-  yb.slice(0) = y;
+  arma::cube yf(N, n_I, d-1, arma::fill::none);
+  arma::cube yb(N, n_I, d-1, arma::fill::none);
+  yf.slice(0) = y_fwd;
+  yb.slice(0) = y_bwd;
   arma::mat y_tmp;
 
 
@@ -83,8 +84,8 @@ List do_shrinkTVP(arma::mat y,
   // generate forward and backward PARCOR
   Rcpp::List betaf_save(nsave);
   Rcpp::List betab_save(nsave);
-  arma::cube betaf_samp(N, n_I2, d, arma::fill::none);
-  arma::cube betab_samp(N, n_I2, d, arma::fill::none);
+  arma::cube betaf_samp(N, n_I2, d-1, arma::fill::none);
+  arma::cube betab_samp(N, n_I2, d-1, arma::fill::none);
   //arma::cube betaf_save(N, n_I2, d, nsave, arma::fill::none); // forward PARCOR coefficients
   //arma::cube betab_save(N, n_I2, d, nsave, arma::fill::none); // backward PARCOR coefficients
   arma::mat beta_nc_tmp;
@@ -94,17 +95,17 @@ List do_shrinkTVP(arma::mat y,
   arma::mat SIGMAf_samp(n_I, n_I, arma::fill::eye);
   arma::mat SIGMAb_samp(n_I, n_I, arma::fill::eye);
 
-  arma::cube thetaf_sr_save(n_I2, d, nsave, arma::fill::none);
-  arma::cube thetab_sr_save(n_I2, d, nsave, arma::fill::none);
+  arma::cube thetaf_sr_save(n_I2, d-1, nsave, arma::fill::none);
+  arma::cube thetab_sr_save(n_I2, d-1, nsave, arma::fill::none);
 
-  arma::cube betaf_mean_save(n_I2, d, nsave, arma::fill::none);
-  arma::cube betab_mean_save(n_I2, d, nsave, arma::fill::none);
+  arma::cube betaf_mean_save(n_I2, d-1, nsave, arma::fill::none);
+  arma::cube betab_mean_save(n_I2, d-1, nsave, arma::fill::none);
 
-  arma::cube xi2f_save(n_I2, d, nsave, arma::fill::none);
-  arma::cube xi2b_save(n_I2, d, nsave, arma::fill::none);
+  arma::cube xi2f_save(n_I2, d-1, nsave, arma::fill::none);
+  arma::cube xi2b_save(n_I2, d-1, nsave, arma::fill::none);
 
-  arma::cube tau2f_save(n_I2, d, nsave, arma::fill::none);
-  arma::cube tau2b_save(n_I2, d, nsave, arma::fill::none);
+  arma::cube tau2f_save(n_I2, d-1, nsave, arma::fill::none);
+  arma::cube tau2b_save(n_I2, d-1, nsave, arma::fill::none);
   // Storage objects
   //arma::cube beta_save(N+1, d, nsave, arma::fill::none);
   //arma::cube sig2_save(N,1, nsave, arma::fill::none);
@@ -132,8 +133,8 @@ List do_shrinkTVP(arma::mat y,
   Rcpp::List betaf_nc_save(nsave);
   Rcpp::List betab_nc_save(nsave);
 
-  arma::cube betaf_nc_samp(N, n_I2, d, arma::fill::zeros);
-  arma::cube betab_nc_samp(N, n_I2, d, arma::fill::zeros);
+  arma::cube betaf_nc_samp(N, n_I2, d-1, arma::fill::zeros);
+  arma::cube betab_nc_samp(N, n_I2, d-1, arma::fill::zeros);
   //arma::cube betaf_nc_samp;
   //arma::cube betab_nc_samp;
   //if (ret_beta_nc){
@@ -206,19 +207,19 @@ List do_shrinkTVP(arma::mat y,
 
 
 
-  arma::mat betaf_mean_samp(n_I2, d);
+  arma::mat betaf_mean_samp(n_I2, d-1);
   betaf_mean_samp.fill(0.1);
 
-  arma::mat betab_mean_samp(n_I2, d);
+  arma::mat betab_mean_samp(n_I2, d-1);
   betab_mean_samp.fill(0.1);
 
   arma::colvec beta_mean_tmp(n_I2, 1);
   beta_mean_tmp.fill(0.1);
 
-  arma::mat thetaf_sr_samp(n_I2, d);
+  arma::mat thetaf_sr_samp(n_I2, d-1);
   thetaf_sr_samp.fill(0.2);
 
-  arma::mat thetab_sr_samp(n_I2, d);
+  arma::mat thetab_sr_samp(n_I2, d-1);
   thetab_sr_samp.fill(0.2);
 
   arma::colvec theta_sr_tmp(n_I2, 1);
@@ -226,19 +227,19 @@ List do_shrinkTVP(arma::mat y,
 
   //arma::vec alpha_tmp(2*n_I2, arma::fill::ones);
 
-  arma::mat tau2f_samp(n_I2, d);
+  arma::mat tau2f_samp(n_I2, d-1);
   tau2f_samp.fill(0.1);
 
-  arma::mat tau2b_samp(n_I2, d);
+  arma::mat tau2b_samp(n_I2, d-1);
   tau2b_samp.fill(0.1);
 
   arma::vec tau2_tmp(n_I2);
   tau2_tmp.fill(0.1);
 
-  arma::mat xi2f_samp(n_I2, d);
+  arma::mat xi2f_samp(n_I2, d-1);
   xi2f_samp.fill(0.1);
 
-  arma::mat xi2b_samp(n_I2, d);
+  arma::mat xi2b_samp(n_I2, d-1);
   xi2b_samp.fill(0.1);
 
   arma::vec xi2_tmp(n_I2);
@@ -352,7 +353,7 @@ List do_shrinkTVP(arma::mat y,
   // Begin Gibbs loop
   for (int j = 0; j < niter; j++){
 
-    for (int m = 1; m < d+1; m++){
+    for (int m = 2; m < d+1; m++){
       // forward
       //-----------------------------------
       n_1 = m + 1; // forward index
@@ -361,13 +362,17 @@ List do_shrinkTVP(arma::mat y,
       //int nb_T = N - m;
       N_m = n_T - n_1 + 1; // time point at stage m
 
-      y_tmp = yf.slice(m-1).rows(n_1-1, n_T-1);
-      x_tmp = yb.slice(m-1).rows(n_1-m-1, n_T-m-1);
+      y_tmp = yf.slice(m-2).rows(n_1-1, n_T-1);
+      x_tmp = yb.slice(m-2).rows(n_1-m-1, n_T-m-1);
+      // arma::cout << "size of x_tmp: " << arma::size(x_tmp) << arma::endl;
+
       beta_nc_tmp = arma::mat(n_I2, N_m+1, arma::fill::zeros);
-      theta_sr_tmp = thetaf_sr_samp.col(m-1);
-      beta_mean_tmp = betaf_mean_samp.col(m-1);
-      tau2_tmp = tau2f_samp.col(m-1);
-      xi2_tmp = xi2f_samp.col(m-1);
+      theta_sr_tmp = thetaf_sr_samp.col(m-2);
+      beta_mean_tmp = betaf_mean_samp.col(m-2);
+
+
+      tau2_tmp = tau2f_samp.col(m-2);
+      xi2_tmp = xi2f_samp.col(m-2);
       //arma::mat W_tmp(n_I*N_m, n_I2*2, arma::fill::zeros);
       // step a)
       // sample time varying beta.tilde parameters (NC parametrization)
@@ -375,8 +380,9 @@ List do_shrinkTVP(arma::mat y,
 
       try {
         sample_beta_tilde(beta_nc_tmp, y_tmp, x_tmp, theta_sr_tmp, SIGMAf_samp, beta_mean_tmp, N_m, n_I, Rchol);
+        betaf_nc_samp.slice(m-2).rows(n_1-1, n_T-1) = arma::trans(beta_nc_tmp.cols(1, N_m));
         if(m < d){
-          yf.slice(m).rows(n_1-1, n_T-1) = y_tmp;
+          yf.slice(m-1).rows(n_1-1, n_T-1) = y_tmp;
         }
 
         //sample_beta_tilde(beta_nc_tmp, yb_tmp, xf, thetab_sr_samp, sig2b_samp, betab_mean_samp, N, d, m, nb_1, nb_T);
@@ -391,18 +397,146 @@ List do_shrinkTVP(arma::mat y,
         }
       }
 
-      // step b)
-      // sample alpha
-      //arma::cout << "size of x_tmp: " << arma::size(x_tmp) << arma::endl;
-      //arma::cout << "size of beta_nc_tmp.cols" << arma::size(beta_nc_tmp.cols(1, N_m)) << arma::endl;
 
-      //get_w(W_tmp, x_tmp, beta_nc_tmp, N_m, n_I);
-      y_tmp = yf.slice(m-1).rows(n_1-1, n_T-1);
+      //arma::cout << "size of beta_nc_tmp: " << arma::size(beta_nc_tmp) << arma::endl;
+      //arma::cout << "size of theta_sr_tmp" << arma::size(theta_sr_tmp) << arma::endl;
 
-      //arma::cout << "size of w_tmp: " << arma::size(W_tmp) << arma::endl;
+      // backward
+      //-----------------------------------
+      n_1 = 1;    // backward index
+      n_T = N - m;    // backward index
+      N_m = n_T - n_1 + 1;
+
+      y_tmp = yb.slice(m-2).rows(n_1-1, n_T-1);
+      x_tmp = yf.slice(m-2).rows(n_1+m-1, n_T+m-1);
+
+      beta_nc_tmp = arma::mat(n_I2, N_m+1, arma::fill::zeros);
+      theta_sr_tmp = thetab_sr_samp.col(m-2);
+      beta_mean_tmp = betab_mean_samp.col(m-2);
+
+      tau2_tmp = tau2b_samp.col(m-2);
+      xi2_tmp = xi2b_samp.col(m-2);
+      //W_tmp = arma::mat(n_I*N_m, n_I2*2, arma::fill::zeros);
+      // step a)
+      // sample time varying beta.tilde parameters (NC parametrization)
+      try {
+        sample_beta_tilde(beta_nc_tmp, y_tmp, x_tmp, theta_sr_tmp, SIGMAb_samp, beta_mean_tmp, N_m, n_I, Rchol);
+        betab_nc_samp.slice(m-2).rows(n_1-1, n_T-1) = arma::trans(beta_nc_tmp.cols(1, N_m));
+        if(m < d){
+          yb.slice(m-1).rows(n_1-1, n_T-1) = y_tmp;
+        }
+
+        //sample_beta_tilde(beta_nc_tmp, yb_tmp, xf, thetab_sr_samp, sig2b_samp, betab_mean_samp, N, d, m, nb_1, nb_T);
+        //yb(arma::span(nb_1-1, nb_T-1)) = yb_tmp;
+        //sample_beta_McCausland(beta_nc_samp, y, x, theta_sr_samp, sig2_samp, betaf_mean_samp, m_N_samp, chol_C_N_inv_samp, true, N, d, Rchol);
+      } catch (...){
+        beta_nc_tmp.fill(nanl(""));
+        if (succesful == true){
+          fail = "sample backward beta_nc";
+          fail_iter = j + 1;
+          succesful = false;
+        }
+      }
+    }
+
+
+    for(int m = 2; m < d+1; m++){
+      // forward
+      //-----------------------------------
+      n_1 = m + 1; // forward index
+      n_T = N;     // forward index
+      //int nb_1 = 1;
+      //int nb_T = N - m;
+      N_m = n_T - n_1 + 1; // time point at stage m
+
+      y_tmp = yf.slice(m-2).rows(n_1-1, n_T-1);
+      x_tmp = yb.slice(m-2).rows(n_1-m-1, n_T-m-1);
+
+
+      beta_nc_tmp = arma::trans(betaf_nc_samp.slice(m-2).rows(n_1-1, n_T-1));
+      theta_sr_tmp = thetaf_sr_samp.col(m-2);
+      beta_mean_tmp = betaf_mean_samp.col(m-2);
+
+
+
+      tau2_tmp = tau2f_samp.col(m-2);
+      xi2_tmp = xi2f_samp.col(m-2);
+
+
 
       try {
         sample_alpha(alpha_tmp, y_tmp, x_tmp, beta_nc_tmp, tau2_tmp, xi2_tmp, SIGMAf_samp, a0, n_I, Rchol);
+      } catch(...){
+        alpha_tmp.fill(nanl(""));
+        if (succesful == true){
+          fail = "sample forward alpha";
+          fail_iter = j + 1;
+          succesful = false;
+        }
+      }
+
+      // Weave back into centered parameterization
+      beta_mean_tmp = alpha_tmp(arma::span(0, n_I2-1));
+      theta_sr_tmp = alpha_tmp(arma::span(n_I2, 2*n_I2-1));
+      beta_nc_tmp_tilde = beta_nc_tmp.each_col() % theta_sr_tmp;
+      betaenter = beta_nc_tmp_tilde.each_col() + beta_mean_tmp;
+
+      // Difference beta outside of function (for numerical stability)
+      beta_diff_pre = arma::diff(beta_nc_tmp, 1, 1);
+      beta_diff =  beta_diff_pre.each_col() % theta_sr_tmp;
+
+      //arma::cout << "size of beta_diff_pre: " << arma::size(beta_diff_pre) << arma::endl;
+      //arma::cout << "size of beta_diff" << arma::size(beta_diff) << arma::endl;
+      // step c)
+      // resample alpha
+      try {
+        resample_alpha_diff(alpha_tmp, betaenter, theta_sr_tmp, beta_mean_tmp, beta_diff, xi2_tmp, tau2_tmp, n_I, N_m);
+      } catch(...) {
+        alpha_tmp.fill(nanl(""));
+        if (succesful == true){
+          fail = "resample forward alpha";
+          fail_iter = j + 1;
+          succesful = false;
+        }
+      }
+
+      // Calculate NC betas with new alpha
+
+      beta_mean_tmp = alpha_tmp(arma::span(0, n_I2-1));
+      theta_sr_tmp = alpha_tmp(arma::span(n_I2, 2*n_I2-1));
+      beta_nc_tmp = betaenter.each_col() - beta_mean_tmp;
+      //arma::cout << "size of beta_nc_tmp: " << arma::size(beta_nc_tmp) << arma::endl;
+      //arma::cout << "size of theta_sr_tmp" << arma::size(theta_sr_tmp) << arma::endl;
+      beta_nc_tmp.each_col() /= theta_sr_tmp;
+
+
+      betaf_nc_samp.slice(m-2).rows(n_1-1, n_T-1) = arma::trans(beta_nc_tmp.cols(1-1, N_m-1));
+      betaf_mean_samp.col(m-2) = alpha_tmp(arma::span(0, n_I2-1));
+      thetaf_sr_samp.col(m-2) = alpha_tmp(arma::span(n_I2, 2*n_I2-1));
+      //get_w(W_tmp, x_tmp, beta_nc_tmp, N_m, n_I);
+      //arma::cout << "size of betaenter: " << arma::size(betaenter) << arma::endl;
+      betaf_samp.slice(m-2).rows(n_1-1, n_T-1) = arma::trans(betaenter.cols(1-1, N_m-1));
+
+
+      // backward
+      //-----------------------------------
+      n_1 = 1;    // backward index
+      n_T = N - m;    // backward index
+      N_m = n_T - n_1 + 1;
+
+      y_tmp = yb.slice(m-2).rows(n_1-1, n_T-1);
+      x_tmp = yf.slice(m-2).rows(n_1+m-1, n_T+m-1);
+
+      beta_nc_tmp = arma::trans(betab_nc_samp.slice(m-2).rows(n_1-1, n_T-1));
+      theta_sr_tmp = thetab_sr_samp.col(m-2);
+      beta_mean_tmp = betab_mean_samp.col(m-2);
+
+      tau2_tmp = tau2b_samp.col(m-2);
+      xi2_tmp = xi2b_samp.col(m-2);
+
+
+      try {
+        sample_alpha(alpha_tmp, y_tmp, x_tmp, beta_nc_tmp, tau2_tmp, xi2_tmp, SIGMAb_samp, a0, n_I, Rchol);
       } catch(...){
         alpha_tmp.fill(nanl(""));
         if (succesful == true){
@@ -446,20 +580,29 @@ List do_shrinkTVP(arma::mat y,
       beta_nc_tmp.each_col() /= theta_sr_tmp;
       //arma::cout << "size of beta_nc_tmp: " << arma::size(beta_nc_tmp) << arma::endl;
       //arma::cout << "size of theta_sr_tmp" << arma::size(theta_sr_tmp) << arma::endl;
-      betaf_nc_samp.slice(m-1).rows(n_1-1, n_T-1) = arma::trans(beta_nc_tmp.cols(1, N_m));
-      betaf_mean_samp.col(m-1) = alpha_tmp(arma::span(0, n_I2-1));
-      thetaf_sr_samp.col(m-1) = alpha_tmp(arma::span(n_I2, 2*n_I2-1));
+
+
+      betab_nc_samp.slice(m-2).rows(n_1-1, n_T-1) = arma::trans(beta_nc_tmp.cols(1-1, N_m-1));
+      betab_mean_samp.col(m-2) = alpha_tmp(arma::span(0, n_I2-1));
+      thetab_sr_samp.col(m-2) = alpha_tmp(arma::span(n_I2, 2*n_I2-1));
       //get_w(W_tmp, x_tmp, beta_nc_tmp, N_m, n_I);
       //arma::cout << "size of betaenter: " << arma::size(betaenter) << arma::endl;
-      betaf_samp.slice(m-1).rows(n_1-1, n_T-1) = arma::trans(betaenter.cols(1, N_m));
+      betab_samp.slice(m-2).rows(n_1-1, n_T-1) = arma::trans(betaenter.cols(1-1, N_m-1));
 
-      //arma::cout << "size of beta_nc_tmp: " << arma::size(beta_nc_tmp) << arma::endl;
-      //arma::cout << "size of theta_sr_tmp" << arma::size(theta_sr_tmp) << arma::endl;
-      // step e)
-      // sample tau2 and xi2
+
+    }
+
+    for(int m = 2; m < d+1; m++){
+
+      // forward
+
+      tau2_tmp = tau2f_samp.col(m-2);
+      xi2_tmp = xi2f_samp.col(m-2);
+      beta_mean_tmp = betaf_mean_samp.col(m-2);
+      theta_sr_tmp = thetaf_sr_samp.col(m-2);
       try {
         sample_tau2(tau2_tmp, beta_mean_tmp, lambda2f_samp, a_tauf_samp, n_I2);
-        tau2f_samp.col(m-1) = tau2_tmp;
+        tau2f_samp.col(m-2) = tau2_tmp;
       } catch(...) {
         tau2_tmp.fill(nanl(""));
         if (succesful == true){
@@ -470,7 +613,7 @@ List do_shrinkTVP(arma::mat y,
       }
       try {
         sample_xi2(xi2_tmp, theta_sr_tmp, kappa2f_samp, a_xif_samp, n_I2);
-        xi2f_samp.col(m-1) = xi2_tmp;
+        xi2f_samp.col(m-2) = xi2_tmp;
       } catch(...) {
         xi2_tmp.fill(nanl(""));
         if (succesful == true){
@@ -479,113 +622,16 @@ List do_shrinkTVP(arma::mat y,
           succesful = false;
         }
       }
-      //arma::cout << "size of beta_nc_tmp: " << arma::size(beta_nc_tmp) << arma::endl;
-      //arma::cout << "size of theta_sr_tmp" << arma::size(theta_sr_tmp) << arma::endl;
 
-      //arma::cout << "size of beta_nc_tmp: " << arma::size(beta_nc_tmp) << arma::endl;
-      //arma::cout << "size of theta_sr_tmp" << arma::size(theta_sr_tmp) << arma::endl;
+      //backward
 
-      // backward
-      //-----------------------------------
-      n_1 = 1;    // backward index
-      n_T = N - m;    // backward index
-      N_m = n_T - n_1 + 1;
-
-      y_tmp = yb.slice(m-1).rows(n_1-1, n_T-1);
-      x_tmp = yf.slice(m-1).rows(n_1+m-1, n_T+m-1);
-      beta_nc_tmp = arma::mat(n_I2, N_m+1, arma::fill::zeros);
-      theta_sr_tmp = thetab_sr_samp.col(m-1);
-      beta_mean_tmp = betab_mean_samp.col(m-1);
-      tau2_tmp = tau2b_samp.col(m-1);
-      xi2_tmp = xi2b_samp.col(m-1);
-      //W_tmp = arma::mat(n_I*N_m, n_I2*2, arma::fill::zeros);
-      // step a)
-      // sample time varying beta.tilde parameters (NC parametrization)
-      try {
-        sample_beta_tilde(beta_nc_tmp, y_tmp, x_tmp, theta_sr_tmp, SIGMAb_samp, beta_mean_tmp, N_m, n_I, Rchol);
-        if(m < d){
-          yb.slice(m).rows(n_1-1, n_T-1) = y_tmp;
-        }
-
-        //sample_beta_tilde(beta_nc_tmp, yb_tmp, xf, thetab_sr_samp, sig2b_samp, betab_mean_samp, N, d, m, nb_1, nb_T);
-        //yb(arma::span(nb_1-1, nb_T-1)) = yb_tmp;
-        //sample_beta_McCausland(beta_nc_samp, y, x, theta_sr_samp, sig2_samp, betaf_mean_samp, m_N_samp, chol_C_N_inv_samp, true, N, d, Rchol);
-      } catch (...){
-        beta_nc_tmp.fill(nanl(""));
-        if (succesful == true){
-          fail = "sample backward beta_nc";
-          fail_iter = j + 1;
-          succesful = false;
-        }
-      }
-
-      // step b)
-      // sample alpha
-      //arma::cout << "size of x_tmp: " << arma::size(x_tmp) << arma::endl;
-      //arma::cout << "size of beta_nc_tmp.cols" << arma::size(beta_nc_tmp.cols(1, N_m)) << arma::endl;
-
-      //get_w(W_tmp, x_tmp, beta_nc_tmp, N_m, n_I);
-      y_tmp = yb.slice(m-1).rows(n_1-1, n_T-1);
-      try {
-        sample_alpha(alpha_tmp, y_tmp, x_tmp, beta_nc_tmp, tau2_tmp, xi2_tmp, SIGMAb_samp, a0, n_I, Rchol);
-      } catch(...){
-        alpha_tmp.fill(nanl(""));
-        if (succesful == true){
-          fail = "sample backward alpha";
-          fail_iter = j + 1;
-          succesful = false;
-        }
-      }
-
-      // Weave back into centered parameterization
-      beta_mean_tmp = alpha_tmp(arma::span(0, n_I2-1));
-      theta_sr_tmp = alpha_tmp(arma::span(n_I2, 2*n_I2-1));
-      beta_nc_tmp_tilde = beta_nc_tmp.each_col() % theta_sr_tmp;
-      betaenter = beta_nc_tmp_tilde.each_col() + beta_mean_tmp;
-
-      // Difference beta outside of function (for numerical stability)
-      beta_diff_pre = arma::diff(beta_nc_tmp, 1, 1);
-      beta_diff =  beta_diff_pre.each_col() % theta_sr_tmp;
-      //arma::cout << "size of beta_diff_pre: " << arma::size(beta_diff_pre) << arma::endl;
-      //arma::cout << "size of beta_diff" << arma::size(beta_diff) << arma::endl;
-      // step c)
-      // resample alpha
-      try {
-        resample_alpha_diff(alpha_tmp, betaenter, theta_sr_tmp, beta_mean_tmp, beta_diff, xi2_tmp, tau2_tmp, n_I, N_m);
-      } catch(...) {
-        alpha_tmp.fill(nanl(""));
-        if (succesful == true){
-          fail = "resample backward alpha";
-          fail_iter = j + 1;
-          succesful = false;
-        }
-      }
-
-      // Calculate NC betas with new alpha
-      beta_mean_tmp = alpha_tmp(arma::span(0, n_I2-1));
-      theta_sr_tmp = alpha_tmp(arma::span(n_I2, 2*n_I2-1));
-      beta_nc_tmp = betaenter.each_col() - beta_mean_tmp;
-      //arma::cout << "size of beta_nc_tmp: " << arma::size(beta_nc_tmp) << arma::endl;
-      //arma::cout << "size of theta_sr_tmp" << arma::size(theta_sr_tmp) << arma::endl;
-      beta_nc_tmp.each_col() /= theta_sr_tmp;
-      //arma::cout << "size of beta_nc_tmp: " << arma::size(beta_nc_tmp) << arma::endl;
-      //arma::cout << "size of theta_sr_tmp" << arma::size(theta_sr_tmp) << arma::endl;
-      betab_nc_samp.slice(m-1).rows(n_1-1, n_T-1) = arma::trans(beta_nc_tmp.cols(1, N_m));
-      betab_mean_samp.col(m-1) = alpha_tmp(arma::span(0, n_I2-1));
-      thetab_sr_samp.col(m-1) = alpha_tmp(arma::span(n_I2, 2*n_I2-1));
-      //get_w(W_tmp, x_tmp, beta_nc_tmp, N_m, n_I);
-      betab_samp.slice(m-1).rows(n_1-1, n_T-1) = arma::trans(betaenter.cols(1, N_m));
-
-      //arma::cout << "size of beta_nc_tmp: " << arma::size(beta_nc_tmp) << arma::endl;
-      //arma::cout << "size of theta_sr_tmp" << arma::size(theta_sr_tmp) << arma::endl;
-      // step e)
-      // sample tau2 and xi2
-      //arma::cout << "size of tau2_tmp " << arma::size(tau2_tmp) << arma::endl;
-      //arma::cout << "size of tau2_samp " << arma::size(tau2b_samp) << arma::endl;
-      //arma::cout << "size of lambda2_samp " << arma::size(lambda2b_samp) << arma::endl;
+      tau2_tmp = tau2b_samp.col(m-2);
+      xi2_tmp = xi2b_samp.col(m-2);
+      beta_mean_tmp = betab_mean_samp.col(m-2);
+      theta_sr_tmp = thetab_sr_samp.col(m-2);
       try {
         sample_tau2(tau2_tmp, beta_mean_tmp, lambda2b_samp, a_taub_samp, n_I2);
-        tau2b_samp.col(m-1) = tau2_tmp;
+        tau2b_samp.col(m-2) = tau2_tmp;
       } catch(...) {
         tau2_tmp.fill(nanl(""));
         if (succesful == true){
@@ -597,7 +643,7 @@ List do_shrinkTVP(arma::mat y,
 
       try {
         sample_xi2(xi2_tmp, theta_sr_tmp, kappa2b_samp, a_xib_samp, n_I2);
-        xi2b_samp.col(m-1) = xi2_tmp;
+        xi2b_samp.col(m-2) = xi2_tmp;
       } catch(...) {
         xi2_tmp.fill(nanl(""));
         if (succesful == true){
@@ -608,46 +654,14 @@ List do_shrinkTVP(arma::mat y,
       }
     }
 
-
-    // step d)
-    // sample a_xif and a_tauf with MH
-    if (learn_a_xi){
-      //arma::cout << "size of a_xif_samp" << arma::size(a_xif_samp) << arma::endl;
-      for(int k = 0; k < n_I2; k++){
-        double before = a_xif_samp(k);
-        //arma::cout << "size of kappa2f_samp " << arma::size(kappa2f_samp) << arma::endl;
-        //arma::cout << "size of thetaf_sr_samp " << arma::size(thetab_sr_samp) << arma::endl;
-        try {
-          a_xif_samp(k) = MH_step(a_xif_samp(k), c_tuning_par_xi, d, kappa2f_samp(k), arma::trans(thetaf_sr_samp.row(k)), b_xi, nu_xi, d1, d2);
-        } catch(...) {
-          a_xif_samp(k) = nanl("");
-          if (succesful == true){
-            fail = "sample forward a_xi";
-            fail_iter = j + 1;
-            succesful = false;
-          }
-        }
-
-        if (before != a_xif_samp(k)){
-          accept_a_xif_tot(k) += 1;
-          if (j < nburn){
-            accept_a_xif_pre(k) += 1;
-          } else {
-            accept_a_xif_post(k) += 1;
-          }
-        }
-      }
-
-    }
-
-
     if (learn_a_tau){
-      for(int k = 0; k < n_I2; k++){
-        double before = a_tauf_samp(k);
+      for(int k = 0; k < n_I; k++){
+        double before = a_tauf_samp(k*n_I);
         try {
-          a_tauf_samp(k) = MH_step(a_tauf_samp(k), c_tuning_par_tau, d, lambda2f_samp(k), arma::trans(betaf_mean_samp.row(k)), b_tau , nu_tau, e1, e2);
+          double tmp = MH_step(a_tauf_samp(k*n_I), c_tuning_par_tau, (d-1)*n_I, lambda2f_samp(k*n_I), arma::vectorise(betaf_mean_samp.rows(k*n_I, (k+1)*n_I-1)), b_tau , nu_tau, e1, e2);
+          a_tauf_samp(arma::span(k*n_I, (k+1)*n_I-1)).fill(tmp);
         } catch(...){
-          a_tauf_samp(k) = nanl("");
+          a_tauf_samp(arma::span(k*n_I, (k+1)*n_I-1)).fill(arma::datum::nan);
           if (succesful == true){
             fail = "sample forward a_tau";
             fail_iter = j + 1;
@@ -655,27 +669,27 @@ List do_shrinkTVP(arma::mat y,
           }
         }
 
-        if (before != a_tauf_samp(k)){
-          accept_a_tauf_tot(k) += 1;
+        if (before != a_tauf_samp(k*n_I)){
+          accept_a_tauf_tot(arma::span(k*n_I, (k+1)*n_I-1)) += 1;
           if (j < nburn){
-            accept_a_tauf_pre(k) += 1;
+            accept_a_tauf_pre(arma::span(k*n_I, (k+1)*n_I-1)) += 1;
           } else {
-            accept_a_tauf_post(k) += 1;
+            accept_a_tauf_post(arma::span(k*n_I, (k+1)*n_I-1)) += 1;
           }
         }
       }
 
     }
 
-
     // sample kappa2 and lambda2, if the user specified it
     if (learn_kappa2){
-      for(int k = 0; k < n_I2; k++){
+      for(int k = 0; k < n_I; k++){
         try {
           //arma::vec xi2f_tmp = xi2f_samp.row(k);
-          kappa2f_samp(k) = sample_kappa2(arma::trans(xi2f_samp.row(k)), a_xif_samp(k), d1, d2, d);
+          double tmp = sample_kappa2(arma::vectorise(xi2f_samp.rows(k*n_I, (k+1)*n_I-1)), a_xif_samp(k*n_I), d1, d2, (d-1)*n_I);
+          kappa2f_samp((arma::span(k*n_I, (k+1)*n_I-1))).fill(tmp);
         } catch (...) {
-          kappa2f_samp(k) = nanl("");
+          kappa2f_samp(arma::span(k*n_I, (k+1)*n_I-1)).fill(arma::datum::nan);
           if (succesful == true){
             fail = "sample forward kappa2";
             fail_iter = j + 1;
@@ -686,12 +700,13 @@ List do_shrinkTVP(arma::mat y,
     }
 
     if (learn_lambda2){
-      for(int k = 0; k < n_I2; k++){
+      for(int k = 0; k < n_I; k++){
         try {
           //arma::vec tau2f_tmp = tau2f_samp.row(k);
-          lambda2f_samp(k) = sample_lambda2(arma::trans(tau2f_samp.row(k)), a_tauf_samp(k), e1, e2, d);
+          double tmp = sample_lambda2(arma::vectorise(tau2f_samp.rows(arma::span(k*n_I, (k+1)*n_I-1))), a_tauf_samp(k*n_I), e1, e2, (d-1)*n_I);
+          lambda2f_samp(arma::span(k*n_I, (k+1)*n_I-1)).fill(tmp);
         } catch (...) {
-          lambda2f_samp(k) = nanl("");
+          lambda2f_samp(arma::span(k*n_I, (k+1)*n_I-1)).fill(arma::datum::nan);
           if (succesful == true){
             fail = "sample forward lambda2";
             fail_iter = j + 1;
@@ -700,28 +715,33 @@ List do_shrinkTVP(arma::mat y,
         }
       }
     }
+
     // step d)
     // sample a_xib and a_taub with MH
     if (learn_a_xi){
-      for(int k = 0; k < n_I2; k++){
-        double before = a_xif_samp(k);
+      //arma::cout << "size of a_xif_samp" << arma::size(a_xif_samp) << arma::endl;
+      for(int k = 0; k < n_I; k++){
+        double before = a_xib_samp(k*n_I);
+        //arma::cout << "size of kappa2f_samp " << arma::size(kappa2f_samp) << arma::endl;
+        //arma::cout << "size of thetaf_sr_samp " << arma::size(thetab_sr_samp) << arma::endl;
         try {
-          a_xib_samp(k) = MH_step(a_xib_samp(k), c_tuning_par_xi, d, kappa2b_samp(k), arma::trans(thetab_sr_samp.row(k)), b_xi , nu_xi, d1, d2);
+          double tmp = MH_step(a_xib_samp(k*n_I), c_tuning_par_xi, (d-1)*n_I, kappa2b_samp(k*n_I), arma::vectorise(thetab_sr_samp.rows(k*n_I, (k+1)*n_I-1)), b_xi, nu_xi, d1, d2);
+          a_xib_samp(arma::span(k*n_I, (k+1)*n_I-1)).fill(tmp);
         } catch(...) {
-          a_xib_samp(k) = nanl("");
+          a_xib_samp(arma::span(k*n_I, (k+1)*n_I-1)).fill(arma::datum::nan);
           if (succesful == true){
-            fail = "sample backward a_xi";
+            fail = "sample forward a_xi";
             fail_iter = j + 1;
             succesful = false;
           }
         }
 
-        if (before != a_xib_samp(k)){
-          accept_a_xib_tot(k) += 1;
+        if (before != a_xib_samp(k*n_I)){
+          accept_a_xib_tot(arma::span(k*n_I, (k+1)*n_I-1)) += 1;
           if (j < nburn){
-            accept_a_xib_pre(k) += 1;
+            accept_a_xib_pre(arma::span(k*n_I, (k+1)*n_I-1)) += 1;
           } else {
-            accept_a_xib_post(k) += 1;
+            accept_a_xib_post(arma::span(k*n_I, (k+1)*n_I-1)) += 1;
           }
         }
       }
@@ -730,25 +750,26 @@ List do_shrinkTVP(arma::mat y,
 
 
     if (learn_a_tau){
-      for(int k = 0; k < n_I2; k++){
-        double before = a_taub_samp(k);
+      for(int k = 0; k < n_I; k++){
+        double before = a_taub_samp(k*n_I);
         try {
-          a_taub_samp(k) = MH_step(a_taub_samp(k), c_tuning_par_tau, d, lambda2b_samp(k), arma::trans(betab_mean_samp.row(k)), b_tau , nu_tau, e1, e2);
+          double tmp = MH_step(a_taub_samp(k*n_I), c_tuning_par_tau, (d-1)*n_I, lambda2b_samp(k*n_I), arma::vectorise(betab_mean_samp.rows(k*n_I, (k+1)*n_I-1)), b_tau , nu_tau, e1, e2);
+          a_taub_samp(arma::span(k*n_I, (k+1)*n_I-1)).fill(tmp);
         } catch(...){
-          a_taub_samp(k) = nanl("");
+          a_taub_samp(arma::span(k*n_I, (k+1)*n_I-1)).fill(arma::datum::nan);
           if (succesful == true){
-            fail = "sample backward a_tau";
+            fail = "sample forward a_tau";
             fail_iter = j + 1;
             succesful = false;
           }
         }
 
-        if (before != a_taub_samp(k)){
-          accept_a_taub_tot(k) += 1;
+        if (before != a_taub_samp(k*n_I)){
+          accept_a_taub_tot(arma::span(k*n_I, (k+1)*n_I-1)) += 1;
           if (j < nburn){
-            accept_a_taub_pre(k) += 1;
+            accept_a_taub_pre(arma::span(k*n_I, (k+1)*n_I-1)) += 1;
           } else {
-            accept_a_taub_post(k) += 1;
+            accept_a_taub_post(arma::span(k*n_I, (k+1)*n_I-1)) += 1;
           }
         }
       }
@@ -758,14 +779,15 @@ List do_shrinkTVP(arma::mat y,
 
     // sample kappa2 and lambda2, if the user specified it
     if (learn_kappa2){
-      for(int k = 0; k < n_I2; k++){
+      for(int k = 0; k < n_I; k++){
         try {
-          //arma::vec xi2b_tmp = xi2b_samp.row(k);
-          kappa2b_samp(k) = sample_kappa2(arma::trans(xi2b_samp.row(k)), a_xib_samp(k), d1, d2, d);
+          //arma::vec xi2f_tmp = xi2f_samp.row(k);
+          double tmp = sample_kappa2(arma::vectorise(xi2b_samp.rows(k*n_I, (k+1)*n_I-1)), a_xib_samp(k*n_I), d1, d2, (d-1)*n_I);
+          kappa2b_samp((arma::span(k*n_I, (k+1)*n_I-1))).fill(tmp);
         } catch (...) {
-          kappa2b_samp(k) = nanl("");
+          kappa2b_samp(arma::span(k*n_I, (k+1)*n_I-1)).fill(arma::datum::nan);
           if (succesful == true){
-            fail = "sample backward kappa2";
+            fail = "sample forward kappa2";
             fail_iter = j + 1;
             succesful = false;
           }
@@ -774,14 +796,15 @@ List do_shrinkTVP(arma::mat y,
     }
 
     if (learn_lambda2){
-      for(int k = 0; k < n_I2; k++){
+      for(int k = 0; k < n_I; k++){
         try {
-          //arma::vec tau2b_tmp = tau2b_samp.row(k);
-          lambda2b_samp(k) = sample_lambda2(arma::trans(tau2b_samp.row(k)), a_taub_samp(k), e1, e2, d);
+          //arma::vec tau2f_tmp = tau2f_samp.row(k);
+          double tmp = sample_lambda2(arma::vectorise(tau2b_samp.rows(arma::span(k*n_I, (k+1)*n_I-1))), a_taub_samp(k*n_I), e1, e2, (d-1)*n_I);
+          lambda2b_samp(arma::span(k*n_I, (k+1)*n_I-1)).fill(tmp);
         } catch (...) {
-          lambda2b_samp(k) = nanl("");
+          lambda2b_samp(arma::span(k*n_I, (k+1)*n_I-1)).fill(arma::datum::nan);
           if (succesful == true){
-            fail = "sample backward lambda2";
+            fail = "sample forward lambda2";
             fail_iter = j + 1;
             succesful = false;
           }
@@ -877,7 +900,7 @@ List do_shrinkTVP(arma::mat y,
     }
 
     // Random sign switch
-    for (int i = 0; i < d; i++){
+    for (int i = 0; i < d-1; i++){
       for(int k = 0; k < n_I2; k++){
         if(R::runif(0,1) > 0.5){
           thetaf_sr_samp(k, i) = -thetaf_sr_samp(k, i);
