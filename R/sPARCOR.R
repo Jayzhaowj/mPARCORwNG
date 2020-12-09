@@ -27,7 +27,12 @@ sPARCOR <- function(y,
   result1 <- run_parcor_parallel(F1 = t(y), delta = delta, P = 1, S_0 = S_0, sample_size = sample_size,
                                  chains = chains, DIC = DIC, uncertainty = uncertainty)
   result2 <- shrinkTVP(yf = t(result1$F1_fwd), yb = t(result1$F1_bwd),
-                       d = d, niter = niter, nburn = nburn)
+                       d = d, niter = niter, nburn = nburn, nthin = nthin,
+                       learn_a_xi = learn_a_xi, learn_a_tau = learn_a_tau, a_xi = a_xi,
+                       a_tau = a_tau, learn_kappa2 = learn_kappa2, learn_lambda2 = learn_lambda2,
+                       kappa2 = kappa2, lambda2 = lambda2, hyperprior_param = hyperprior_param,
+                       c_tuning_par_xi = c_tuning_par_xi, c_tuning_par_tau = c_tuning_par_tau,
+                       display_progress = display_progress, ret_beta_nc = ret_beta_nc)
   ### extract forward part
   beta_tmp <- simplify2array(result2$beta$f)
   phi_fwd <- apply(beta_tmp, 1:3, mean)
