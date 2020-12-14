@@ -73,9 +73,9 @@ void sample_beta_tilde(arma::mat& beta_nc_samp, arma::mat& y, arma::mat& x, arma
 
     //St_sqp = arma::sqrtmat(St.slice(t-1));
     Qt = Ft.slice(t-1)*Rt.slice(t)*arma::trans(Ft.slice(t-1)) + St.slice(t-1);
-    //Qt = 0.5*Qt + 0.5*arma::trans(Qt);
-    //Qt_inv = arma::inv_sympd(Qt);
-    Qt_inv = arma::inv(Qt);
+    Qt = 0.5*Qt + 0.5*arma::trans(Qt);
+    Qt_inv = arma::inv_sympd(Qt);
+    //Qt_inv = arma::inv(Qt);
     Qt_inv = 0.5*Qt_inv + 0.5*arma::trans(Qt_inv);
     Qt_inv_sq = arma::sqrtmat_sympd(Qt_inv);
     //Qt_inv_sq = arma::sqrtmat(Qt_inv);
@@ -89,6 +89,7 @@ void sample_beta_tilde(arma::mat& beta_nc_samp, arma::mat& y, arma::mat& x, arma
     At = Rt.slice(t)*arma::trans(Ft.slice(t-1))*Qt_inv;
     mt.col(t) = mt.col(t-1) + At*et;
     Ct.slice(t) = Rt.slice(t) - At*Qt*arma::trans(At);
+    Ct.slice(t) = 0.5*Ct.slice(t) + 0.5*arma::trans(Ct.slice(t));
   }
   SIGMA = St.slice(N);
   mT.col(N) = mt.col(N);
