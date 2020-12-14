@@ -13,6 +13,7 @@ using namespace Rcpp;
 List do_shrinkTVP(arma::mat y_fwd,
                   arma::mat y_bwd,
                   arma::vec a0,
+                  arma::mat S_0,
                   int d,
                   int niter,
                   int nburn,
@@ -379,7 +380,7 @@ List do_shrinkTVP(arma::mat y_fwd,
       //arma::cout << "size of x_tmp: " << arma::size(x_tmp) << arma::endl;
 
       try {
-        sample_beta_tilde(beta_nc_tmp, y_tmp, x_tmp, theta_sr_tmp, SIGMAf_samp, beta_mean_tmp, N_m, n_I, Rchol);
+        sample_beta_tilde(beta_nc_tmp, y_tmp, x_tmp, theta_sr_tmp, SIGMAf_samp, beta_mean_tmp, N_m, n_I, S_0, Rchol);
         betaf_nc_samp.slice(m-2).rows(n_1-1, n_T-1) = arma::trans(beta_nc_tmp.cols(1, N_m));
         if(m < d){
           yf.slice(m-1).rows(n_1-1, n_T-1) = y_tmp;
@@ -420,7 +421,7 @@ List do_shrinkTVP(arma::mat y_fwd,
       // step a)
       // sample time varying beta.tilde parameters (NC parametrization)
       try {
-        sample_beta_tilde(beta_nc_tmp, y_tmp, x_tmp, theta_sr_tmp, SIGMAb_samp, beta_mean_tmp, N_m, n_I, Rchol);
+        sample_beta_tilde(beta_nc_tmp, y_tmp, x_tmp, theta_sr_tmp, SIGMAb_samp, beta_mean_tmp, N_m, n_I, S_0, Rchol);
         betab_nc_samp.slice(m-2).rows(n_1-1, n_T-1) = arma::trans(beta_nc_tmp.cols(1, N_m));
         if(m < d){
           yb.slice(m-1).rows(n_1-1, n_T-1) = y_tmp;

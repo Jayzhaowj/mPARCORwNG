@@ -26,7 +26,7 @@ void get_w(arma::mat& W, arma::mat& x, arma::mat& beta_nc_samp, int N, int n_I){
 
 
 
-void sample_beta_tilde(arma::mat& beta_nc_samp, arma::mat& y, arma::mat& x, arma::colvec& theta_sr, arma::mat& SIGMA, arma::colvec& beta_mean, int N, int n_I, Function Rchol){
+void sample_beta_tilde(arma::mat& beta_nc_samp, arma::mat& y, arma::mat& x, arma::colvec& theta_sr, arma::mat& SIGMA, arma::colvec& beta_mean, int N, int n_I, arma::mat S_0, Function Rchol){
   // initialization
   int d = n_I;
   int d2 = std::pow(n_I, 2);
@@ -40,7 +40,7 @@ void sample_beta_tilde(arma::mat& beta_nc_samp, arma::mat& y, arma::mat& x, arma
   arma::cube St(d, d, N+1, arma::fill::zeros);
   arma::mat St_sqp;
   arma::mat S_comp(d, d, arma::fill::zeros);
-  arma::mat S_0(d, d, arma::fill::eye);
+
 
   double n_0 = 1.0;
   arma::mat yt_star(d, N, arma::fill::zeros);
@@ -54,7 +54,7 @@ void sample_beta_tilde(arma::mat& beta_nc_samp, arma::mat& y, arma::mat& x, arma
   arma::mat Qt_inv_sq;
   arma::mat At;
   arma::colvec et;
-  St.slice(0) = 100*I_d;
+  St.slice(0) = S_0;
   Ct.slice(0) = I_d2;
 
 

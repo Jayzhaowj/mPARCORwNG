@@ -6,7 +6,7 @@
 using namespace Rcpp;
 
 void res_protector(double& x);
-void sample_beta_tilde(arma::mat& beta_nc_samp, arma::mat& y, arma::mat& x, arma::colvec& theta_sr, arma::mat& SIGMA, arma::colvec& beta_mean, int N, int n_I, Function Rchol); //
+void sample_beta_tilde(arma::mat& beta_nc_samp, arma::mat& y, arma::mat& x, arma::colvec& theta_sr, arma::mat& SIGMA, arma::colvec& beta_mean, int N, int n_I, arma::mat S_0, Function Rchol); //
 void sample_alpha(arma::vec& alpha_samp, arma::mat& y, arma::mat& x, arma::mat& beta_nc, arma::colvec& tau2, arma::colvec& xi2, arma::mat& SIGMA, arma::vec& a0, int n_I, Function Rchol);
 void resample_alpha_diff(arma::vec& alpha_samp, arma::mat& betaenter, arma::vec& theta_sr, arma::vec& beta_mean, arma::mat& beta_diff,  arma::vec& xi2, arma::vec& tau2, int d, int N);
 void sample_tau2(arma::vec& tau2_samp, arma::vec& beta_mean, arma::vec& lambda2, arma::vec& a_tau, int d);
