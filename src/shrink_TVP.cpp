@@ -399,72 +399,7 @@ List do_shrinkTVP(arma::mat y_fwd,
       }
 
 
-      //arma::cout << "size of beta_nc_tmp: " << arma::size(beta_nc_tmp) << arma::endl;
-      //arma::cout << "size of theta_sr_tmp" << arma::size(theta_sr_tmp) << arma::endl;
-
-      // backward
-      //-----------------------------------
-      n_1 = 1;    // backward index
-      n_T = N - m;    // backward index
-      N_m = n_T - n_1 + 1;
-
-      y_tmp = yb.slice(m-2).rows(n_1-1, n_T-1);
-      x_tmp = yf.slice(m-2).rows(n_1+m-1, n_T+m-1);
-
-      beta_nc_tmp = arma::mat(n_I2, N_m+1, arma::fill::zeros);
-      theta_sr_tmp = thetab_sr_samp.col(m-2);
-      beta_mean_tmp = betab_mean_samp.col(m-2);
-
-      tau2_tmp = tau2b_samp.col(m-2);
-      xi2_tmp = xi2b_samp.col(m-2);
-      //W_tmp = arma::mat(n_I*N_m, n_I2*2, arma::fill::zeros);
-      // step a)
-      // sample time varying beta.tilde parameters (NC parametrization)
-      try {
-        sample_beta_tilde(beta_nc_tmp, y_tmp, x_tmp, theta_sr_tmp, SIGMAb_samp, beta_mean_tmp, N_m, n_I, S_0, Rchol);
-        betab_nc_samp.slice(m-2).rows(n_1-1, n_T-1) = arma::trans(beta_nc_tmp.cols(1, N_m));
-        if(m < d){
-          yb.slice(m-1).rows(n_1-1, n_T-1) = y_tmp;
-        }
-
-        //sample_beta_tilde(beta_nc_tmp, yb_tmp, xf, thetab_sr_samp, sig2b_samp, betab_mean_samp, N, d, m, nb_1, nb_T);
-        //yb(arma::span(nb_1-1, nb_T-1)) = yb_tmp;
-        //sample_beta_McCausland(beta_nc_samp, y, x, theta_sr_samp, sig2_samp, betaf_mean_samp, m_N_samp, chol_C_N_inv_samp, true, N, d, Rchol);
-      } catch (...){
-        beta_nc_tmp.fill(nanl(""));
-        if (succesful == true){
-          fail = "sample backward beta_nc";
-          fail_iter = j + 1;
-          succesful = false;
-        }
-      }
-    }
-
-
-    for(int m = 2; m < d+1; m++){
-      // forward
-      //-----------------------------------
-      n_1 = m + 1; // forward index
-      n_T = N;     // forward index
-      //int nb_1 = 1;
-      //int nb_T = N - m;
-      N_m = n_T - n_1 + 1; // time point at stage m
-
-      y_tmp = yf.slice(m-2).rows(n_1-1, n_T-1);
-      x_tmp = yb.slice(m-2).rows(n_1-m-1, n_T-m-1);
-
-
-      beta_nc_tmp = arma::trans(betaf_nc_samp.slice(m-2).rows(n_1-1, n_T-1));
-      theta_sr_tmp = thetaf_sr_samp.col(m-2);
-      beta_mean_tmp = betaf_mean_samp.col(m-2);
-
-
-
-      tau2_tmp = tau2f_samp.col(m-2);
-      xi2_tmp = xi2f_samp.col(m-2);
-
-
-
+      // sample forward alpha
       try {
         sample_alpha(alpha_tmp, y_tmp, x_tmp, beta_nc_tmp, tau2_tmp, xi2_tmp, SIGMAf_samp, a0, n_I, Rchol);
       } catch(...){
@@ -518,6 +453,34 @@ List do_shrinkTVP(arma::mat y_fwd,
       //arma::cout << "size of betaenter: " << arma::size(betaenter) << arma::endl;
       betaf_samp.slice(m-2).rows(n_1-1, n_T-1) = arma::trans(betaenter.cols(1-1, N_m-1));
 
+      // sample forward tau2
+      try {
+        sample_tau2(tau2_tmp, beta_mean_tmp, lambda2f_samp, a_tauf_samp, n_I2);
+        tau2f_samp.col(m-2) = tau2_tmp;
+      } catch(...) {
+        tau2_tmp.fill(nanl(""));
+        if (succesful == true){
+          fail = "sample forward tau2";
+          fail_iter = j + 1;
+          succesful = false;
+        }
+      }
+
+      // sample forward xi2
+      try {
+        sample_xi2(xi2_tmp, theta_sr_tmp, kappa2f_samp, a_xif_samp, n_I2);
+        xi2f_samp.col(m-2) = xi2_tmp;
+      } catch(...) {
+        xi2_tmp.fill(nanl(""));
+        if (succesful == true){
+          fail = "sample forward xi2";
+          fail_iter = j + 1;
+          succesful = false;
+        }
+      }
+
+      //arma::cout << "size of beta_nc_tmp: " << arma::size(beta_nc_tmp) << arma::endl;
+      //arma::cout << "size of theta_sr_tmp" << arma::size(theta_sr_tmp) << arma::endl;
 
       // backward
       //-----------------------------------
@@ -528,14 +491,36 @@ List do_shrinkTVP(arma::mat y_fwd,
       y_tmp = yb.slice(m-2).rows(n_1-1, n_T-1);
       x_tmp = yf.slice(m-2).rows(n_1+m-1, n_T+m-1);
 
-      beta_nc_tmp = arma::trans(betab_nc_samp.slice(m-2).rows(n_1-1, n_T-1));
+      beta_nc_tmp = arma::mat(n_I2, N_m+1, arma::fill::zeros);
       theta_sr_tmp = thetab_sr_samp.col(m-2);
       beta_mean_tmp = betab_mean_samp.col(m-2);
 
       tau2_tmp = tau2b_samp.col(m-2);
       xi2_tmp = xi2b_samp.col(m-2);
+      //W_tmp = arma::mat(n_I*N_m, n_I2*2, arma::fill::zeros);
+      // step a)
+      // sample time varying beta.tilde parameters (NC parametrization)
+      try {
+        sample_beta_tilde(beta_nc_tmp, y_tmp, x_tmp, theta_sr_tmp, SIGMAb_samp, beta_mean_tmp, N_m, n_I, S_0, Rchol);
+        betab_nc_samp.slice(m-2).rows(n_1-1, n_T-1) = arma::trans(beta_nc_tmp.cols(1, N_m));
+        if(m < d){
+          yb.slice(m-1).rows(n_1-1, n_T-1) = y_tmp;
+        }
+
+        //sample_beta_tilde(beta_nc_tmp, yb_tmp, xf, thetab_sr_samp, sig2b_samp, betab_mean_samp, N, d, m, nb_1, nb_T);
+        //yb(arma::span(nb_1-1, nb_T-1)) = yb_tmp;
+        //sample_beta_McCausland(beta_nc_samp, y, x, theta_sr_samp, sig2_samp, betaf_mean_samp, m_N_samp, chol_C_N_inv_samp, true, N, d, Rchol);
+      } catch (...){
+        beta_nc_tmp.fill(nanl(""));
+        if (succesful == true){
+          fail = "sample backward beta_nc";
+          fail_iter = j + 1;
+          succesful = false;
+        }
+      }
 
 
+      // sample backward alpha
       try {
         sample_alpha(alpha_tmp, y_tmp, x_tmp, beta_nc_tmp, tau2_tmp, xi2_tmp, SIGMAb_samp, a0, n_I, Rchol);
       } catch(...){
@@ -591,45 +576,8 @@ List do_shrinkTVP(arma::mat y_fwd,
       betab_samp.slice(m-2).rows(n_1-1, n_T-1) = arma::trans(betaenter.cols(1-1, N_m-1));
 
 
-    }
 
-    for(int m = 2; m < d+1; m++){
-
-      // forward
-
-      tau2_tmp = tau2f_samp.col(m-2);
-      xi2_tmp = xi2f_samp.col(m-2);
-      beta_mean_tmp = betaf_mean_samp.col(m-2);
-      theta_sr_tmp = thetaf_sr_samp.col(m-2);
-      try {
-        sample_tau2(tau2_tmp, beta_mean_tmp, lambda2f_samp, a_tauf_samp, n_I2);
-        tau2f_samp.col(m-2) = tau2_tmp;
-      } catch(...) {
-        tau2_tmp.fill(nanl(""));
-        if (succesful == true){
-          fail = "sample forward tau2";
-          fail_iter = j + 1;
-          succesful = false;
-        }
-      }
-      try {
-        sample_xi2(xi2_tmp, theta_sr_tmp, kappa2f_samp, a_xif_samp, n_I2);
-        xi2f_samp.col(m-2) = xi2_tmp;
-      } catch(...) {
-        xi2_tmp.fill(nanl(""));
-        if (succesful == true){
-          fail = "sample forward xi2";
-          fail_iter = j + 1;
-          succesful = false;
-        }
-      }
-
-      //backward
-
-      tau2_tmp = tau2b_samp.col(m-2);
-      xi2_tmp = xi2b_samp.col(m-2);
-      beta_mean_tmp = betab_mean_samp.col(m-2);
-      theta_sr_tmp = thetab_sr_samp.col(m-2);
+      // sample backward tau2
       try {
         sample_tau2(tau2_tmp, beta_mean_tmp, lambda2b_samp, a_taub_samp, n_I2);
         tau2b_samp.col(m-2) = tau2_tmp;
@@ -642,6 +590,7 @@ List do_shrinkTVP(arma::mat y_fwd,
         }
       }
 
+      // sample backward xi2
       try {
         sample_xi2(xi2_tmp, theta_sr_tmp, kappa2b_samp, a_xib_samp, n_I2);
         xi2b_samp.col(m-2) = xi2_tmp;
@@ -653,7 +602,76 @@ List do_shrinkTVP(arma::mat y_fwd,
           succesful = false;
         }
       }
+
     }
+
+
+    // for(int m = 2; m < d+1; m++){
+    //   // forward
+    //   //-----------------------------------
+    //   n_1 = m + 1; // forward index
+    //   n_T = N;     // forward index
+    //   //int nb_1 = 1;
+    //   //int nb_T = N - m;
+    //   N_m = n_T - n_1 + 1; // time point at stage m
+    //
+    //   y_tmp = yf.slice(m-2).rows(n_1-1, n_T-1);
+    //   x_tmp = yb.slice(m-2).rows(n_1-m-1, n_T-m-1);
+    //
+    //
+    //   beta_nc_tmp = arma::trans(betaf_nc_samp.slice(m-2).rows(n_1-1, n_T-1));
+    //   theta_sr_tmp = thetaf_sr_samp.col(m-2);
+    //   beta_mean_tmp = betaf_mean_samp.col(m-2);
+    //
+    //
+    //
+    //   tau2_tmp = tau2f_samp.col(m-2);
+    //   xi2_tmp = xi2f_samp.col(m-2);
+    //
+    //
+    //
+    //
+    //
+    //
+    //   // backward
+    //   //-----------------------------------
+    //   n_1 = 1;    // backward index
+    //   n_T = N - m;    // backward index
+    //   N_m = n_T - n_1 + 1;
+    //
+    //   y_tmp = yb.slice(m-2).rows(n_1-1, n_T-1);
+    //   x_tmp = yf.slice(m-2).rows(n_1+m-1, n_T+m-1);
+    //
+    //   beta_nc_tmp = arma::trans(betab_nc_samp.slice(m-2).rows(n_1-1, n_T-1));
+    //   theta_sr_tmp = thetab_sr_samp.col(m-2);
+    //   beta_mean_tmp = betab_mean_samp.col(m-2);
+    //
+    //   tau2_tmp = tau2b_samp.col(m-2);
+    //   xi2_tmp = xi2b_samp.col(m-2);
+    //
+    //
+    //
+    //
+    // }
+    //
+    // for(int m = 2; m < d+1; m++){
+    //
+    //   // forward
+    //
+    //   tau2_tmp = tau2f_samp.col(m-2);
+    //   xi2_tmp = xi2f_samp.col(m-2);
+    //   beta_mean_tmp = betaf_mean_samp.col(m-2);
+    //   theta_sr_tmp = thetaf_sr_samp.col(m-2);
+    //
+    //
+    //   //backward
+    //
+    //   tau2_tmp = tau2b_samp.col(m-2);
+    //   xi2_tmp = xi2b_samp.col(m-2);
+    //   beta_mean_tmp = betab_mean_samp.col(m-2);
+    //   theta_sr_tmp = thetab_sr_samp.col(m-2);
+    //
+    // }
 
     if (learn_a_tau){
       for(int k = 0; k < n_I; k++){
