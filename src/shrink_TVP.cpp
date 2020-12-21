@@ -395,7 +395,7 @@ List do_shrinkTVP(arma::mat y_fwd,
         if(m < d){
           yf.slice(m-1).rows(n_1-1, n_T-1) = y_tmp;
         }
-
+        y_tmp = yf.slice(m-2).rows(n_1-1, n_T-1);
         //sample_beta_tilde(beta_nc_tmp, yb_tmp, xf, thetab_sr_samp, sig2b_samp, betab_mean_samp, N, d, m, nb_1, nb_T);
         //yb(arma::span(nb_1-1, nb_T-1)) = yb_tmp;
         //sample_beta_McCausland(beta_nc_samp, y, x, theta_sr_samp, sig2_samp, betaf_mean_samp, m_N_samp, chol_C_N_inv_samp, true, N, d, Rchol);
@@ -517,7 +517,7 @@ List do_shrinkTVP(arma::mat y_fwd,
         if(m < d){
           yb.slice(m-1).rows(n_1-1, n_T-1) = y_tmp;
         }
-
+        y_tmp = yb.slice(m-2).rows(n_1-1, n_T-1);
         //sample_beta_tilde(beta_nc_tmp, yb_tmp, xf, thetab_sr_samp, sig2b_samp, betab_mean_samp, N, d, m, nb_1, nb_T);
         //yb(arma::span(nb_1-1, nb_T-1)) = yb_tmp;
         //sample_beta_McCausland(beta_nc_samp, y, x, theta_sr_samp, sig2_samp, betaf_mean_samp, m_N_samp, chol_C_N_inv_samp, true, N, d, Rchol);
