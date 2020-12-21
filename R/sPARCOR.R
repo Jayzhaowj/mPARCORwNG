@@ -73,11 +73,14 @@ sPARCOR <- function(y,
     phi_bwd <- aperm(phi_bwd, perm = c(2, 1, 3))
     phi_bwd <- abind::abind(result1$phi_bwd, phi_bwd)
 
+
     ### extract forward SIGMA
-    SIGMA_mean <- apply(simplify2array(result2$SIGMA$f), 1:2, mean)
+    SIGMA_mean <- apply(simplify2array(result2$SIGMA$f), 1:3, mean)
+    SIGMA <- abind::abind(result1$St_fwd[[1]][, , n_t-d], SIGMA_mean)
+    ### transfer PARCOR coefficients to AR coefficients
     tmp <- PAR_to_AR_fun(phi_fwd = phi_fwd, phi_bwd = phi_bwd, n_I = K)
     ar <- tmp[[d]]$forward
-    return(list(phi_fwd = phi_fwd, phi_bwd = phi_bwd, SIGMA = SIGMA_mean,
+    return(list(phi_fwd = phi_fwd, phi_bwd = phi_bwd, SIGMA = SIGMA,
                 ar = ar))
   }
 

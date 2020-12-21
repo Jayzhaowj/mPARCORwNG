@@ -91,10 +91,19 @@ List do_shrinkTVP(arma::mat y_fwd,
   //arma::cube betab_save(N, n_I2, d, nsave, arma::fill::none); // backward PARCOR coefficients
   arma::mat beta_nc_tmp;
 
-  arma::cube SIGMAf_save(n_I, n_I, nsave, arma::fill::none);
-  arma::cube SIGMAb_save(n_I, n_I, nsave, arma::fill::none);
-  arma::mat SIGMAf_samp(n_I, n_I, arma::fill::eye);
-  arma::mat SIGMAb_samp(n_I, n_I, arma::fill::eye);
+  // arma::cube SIGMAf_save(n_I, n_I, nsave, arma::fill::none);
+  // arma::cube SIGMAb_save(n_I, n_I, nsave, arma::fill::none);
+  // arma::mat SIGMAf_samp(n_I, n_I, arma::fill::eye);
+  // arma::mat SIGMAb_samp(n_I, n_I, arma::fill::eye);
+
+  Rcpp::List SIGMAf_save(nsave);
+  Rcpp::List SIGMAb_save(nsave);
+
+  arma::cube SIGMAf_samp(n_I, n_I, d-1, arma::fill::none);
+  arma::cube SIGMAb_samp(n_I, n_I, d-1, arma::fill::none);
+
+  arma::mat SIGMAf_tmp(n_I, n_I, arma::fill::eye);
+  arma::mat SIGMAb_tmp(n_I, n_I, arma::fill::eye);
 
   arma::cube thetaf_sr_save(n_I2, d-1, nsave, arma::fill::none);
   arma::cube thetab_sr_save(n_I2, d-1, nsave, arma::fill::none);
@@ -380,8 +389,9 @@ List do_shrinkTVP(arma::mat y_fwd,
       //arma::cout << "size of x_tmp: " << arma::size(x_tmp) << arma::endl;
 
       try {
-        sample_beta_tilde(beta_nc_tmp, y_tmp, x_tmp, theta_sr_tmp, SIGMAf_samp, beta_mean_tmp, N_m, n_I, S_0, Rchol);
+        sample_beta_tilde(beta_nc_tmp, y_tmp, x_tmp, theta_sr_tmp, SIGMAf_tmp, beta_mean_tmp, N_m, n_I, S_0, Rchol);
         betaf_nc_samp.slice(m-2).rows(n_1-1, n_T-1) = arma::trans(beta_nc_tmp.cols(1, N_m));
+        SIGMAf_samp.slice(m-2) = SIGMAf_tmp;
         if(m < d){
           yf.slice(m-1).rows(n_1-1, n_T-1) = y_tmp;
         }
@@ -401,7 +411,7 @@ List do_shrinkTVP(arma::mat y_fwd,
 
       // sample forward alpha
       try {
-        sample_alpha(alpha_tmp, y_tmp, x_tmp, beta_nc_tmp, tau2_tmp, xi2_tmp, SIGMAf_samp, a0, n_I, Rchol);
+        sample_alpha(alpha_tmp, y_tmp, x_tmp, beta_nc_tmp, tau2_tmp, xi2_tmp, SIGMAf_tmp, a0, n_I, Rchol);
       } catch(...){
         alpha_tmp.fill(nanl(""));
         if (succesful == true){
@@ -501,8 +511,9 @@ List do_shrinkTVP(arma::mat y_fwd,
       // step a)
       // sample time varying beta.tilde parameters (NC parametrization)
       try {
-        sample_beta_tilde(beta_nc_tmp, y_tmp, x_tmp, theta_sr_tmp, SIGMAb_samp, beta_mean_tmp, N_m, n_I, S_0, Rchol);
+        sample_beta_tilde(beta_nc_tmp, y_tmp, x_tmp, theta_sr_tmp, SIGMAb_tmp, beta_mean_tmp, N_m, n_I, S_0, Rchol);
         betab_nc_samp.slice(m-2).rows(n_1-1, n_T-1) = arma::trans(beta_nc_tmp.cols(1, N_m));
+        SIGMAb_samp.slice(m-2) = SIGMAb_tmp;
         if(m < d){
           yb.slice(m-1).rows(n_1-1, n_T-1) = y_tmp;
         }
@@ -522,7 +533,7 @@ List do_shrinkTVP(arma::mat y_fwd,
 
       // sample backward alpha
       try {
-        sample_alpha(alpha_tmp, y_tmp, x_tmp, beta_nc_tmp, tau2_tmp, xi2_tmp, SIGMAb_samp, a0, n_I, Rchol);
+        sample_alpha(alpha_tmp, y_tmp, x_tmp, beta_nc_tmp, tau2_tmp, xi2_tmp, SIGMAb_tmp, a0, n_I, Rchol);
       } catch(...){
         alpha_tmp.fill(nanl(""));
         if (succesful == true){
@@ -855,8 +866,8 @@ List do_shrinkTVP(arma::mat y_fwd,
       //arma::cout << "size of SIGMAf_save: " << arma::size(SIGMAf_save) << arma::endl;
       //arma::cout << "size of SIGMAb_save: " << arma::size(SIGMAb_save) << arma::endl;
 
-      SIGMAf_save.slice((post_j-1)/nthin) = SIGMAf_samp;
-      SIGMAb_save.slice((post_j-1)/nthin) = SIGMAb_samp;
+      SIGMAf_save((post_j-1)/nthin) = SIGMAf_samp;
+      SIGMAb_save((post_j-1)/nthin) = SIGMAb_samp;
 
       //arma::cout << "size of thetaf_sr_save: " << arma::size(thetaf_sr_save) << arma::endl;
       //arma::cout << "size of thetab_sr_save: " << arma::size(thetab_sr_save) << arma::endl;
