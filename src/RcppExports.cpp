@@ -6,6 +6,25 @@
 
 using namespace Rcpp;
 
+#ifdef RCPP_USE_GLOBAL_ROSTREAM
+Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
+Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
+#endif
+
+// update_local_shrink
+void update_local_shrink(arma::vec& local_shrink, arma::vec& local_shrink_inv, const arma::vec& param_vec2, arma::vec& global_shrink, arma::vec& a);
+RcppExport SEXP _mPARCORwNG_update_local_shrink(SEXP local_shrinkSEXP, SEXP local_shrink_invSEXP, SEXP param_vec2SEXP, SEXP global_shrinkSEXP, SEXP aSEXP) {
+BEGIN_RCPP
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::vec& >::type local_shrink(local_shrinkSEXP);
+    Rcpp::traits::input_parameter< arma::vec& >::type local_shrink_inv(local_shrink_invSEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type param_vec2(param_vec2SEXP);
+    Rcpp::traits::input_parameter< arma::vec& >::type global_shrink(global_shrinkSEXP);
+    Rcpp::traits::input_parameter< arma::vec& >::type a(aSEXP);
+    update_local_shrink(local_shrink, local_shrink_inv, param_vec2, global_shrink, a);
+    return R_NilValue;
+END_RCPP
+}
 // pred_dens_mix_approx
 arma::vec pred_dens_mix_approx(arma::vec x_test, arma::vec y_test, arma::mat theta_sr, arma::mat beta_mean, arma::vec sig2_samp, bool sv, arma::vec sv_phi, arma::vec sv_mu, arma::vec sv_sigma2, arma::cube chol_C_N_inv_samp, arma::cube m_N_samp, int M, bool log);
 RcppExport SEXP _mPARCORwNG_pred_dens_mix_approx(SEXP x_testSEXP, SEXP y_testSEXP, SEXP theta_srSEXP, SEXP beta_meanSEXP, SEXP sig2_sampSEXP, SEXP svSEXP, SEXP sv_phiSEXP, SEXP sv_muSEXP, SEXP sv_sigma2SEXP, SEXP chol_C_N_inv_sampSEXP, SEXP m_N_sampSEXP, SEXP MSEXP, SEXP logSEXP) {
@@ -71,10 +90,34 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// vi_shrinkTVP
+List vi_shrinkTVP(arma::mat y, int d, double d1, double d2, double e1, double e2, double a_xi, double a_tau, bool learn_a_xi, bool learn_a_tau, int iter_max, double epsilon);
+RcppExport SEXP _mPARCORwNG_vi_shrinkTVP(SEXP ySEXP, SEXP dSEXP, SEXP d1SEXP, SEXP d2SEXP, SEXP e1SEXP, SEXP e2SEXP, SEXP a_xiSEXP, SEXP a_tauSEXP, SEXP learn_a_xiSEXP, SEXP learn_a_tauSEXP, SEXP iter_maxSEXP, SEXP epsilonSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::mat >::type y(ySEXP);
+    Rcpp::traits::input_parameter< int >::type d(dSEXP);
+    Rcpp::traits::input_parameter< double >::type d1(d1SEXP);
+    Rcpp::traits::input_parameter< double >::type d2(d2SEXP);
+    Rcpp::traits::input_parameter< double >::type e1(e1SEXP);
+    Rcpp::traits::input_parameter< double >::type e2(e2SEXP);
+    Rcpp::traits::input_parameter< double >::type a_xi(a_xiSEXP);
+    Rcpp::traits::input_parameter< double >::type a_tau(a_tauSEXP);
+    Rcpp::traits::input_parameter< bool >::type learn_a_xi(learn_a_xiSEXP);
+    Rcpp::traits::input_parameter< bool >::type learn_a_tau(learn_a_tauSEXP);
+    Rcpp::traits::input_parameter< int >::type iter_max(iter_maxSEXP);
+    Rcpp::traits::input_parameter< double >::type epsilon(epsilonSEXP);
+    rcpp_result_gen = Rcpp::wrap(vi_shrinkTVP(y, d, d1, d2, e1, e2, a_xi, a_tau, learn_a_xi, learn_a_tau, iter_max, epsilon));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
+    {"_mPARCORwNG_update_local_shrink", (DL_FUNC) &_mPARCORwNG_update_local_shrink, 5},
     {"_mPARCORwNG_pred_dens_mix_approx", (DL_FUNC) &_mPARCORwNG_pred_dens_mix_approx, 13},
     {"_mPARCORwNG_do_shrinkTVP", (DL_FUNC) &_mPARCORwNG_do_shrinkTVP, 32},
+    {"_mPARCORwNG_vi_shrinkTVP", (DL_FUNC) &_mPARCORwNG_vi_shrinkTVP, 12},
     {NULL, NULL, 0}
 };
 
