@@ -49,13 +49,12 @@ BEGIN_RCPP
 END_RCPP
 }
 // do_shrinkTVP
-List do_shrinkTVP(arma::mat y_fwd, arma::mat y_bwd, arma::vec a0, arma::mat S_0, int d, int niter, int nburn, int nthin, double c0, double g0, double G0, double d1, double d2, double e1, double e2, bool learn_lambda2, bool learn_kappa2, double lambda2, double kappa2, bool learn_a_xi, bool learn_a_tau, double a_xi, double a_tau, double c_tuning_par_xi, double c_tuning_par_tau, double b_xi, double b_tau, double nu_xi, double nu_tau, bool display_progress, bool ret_beta_nc, bool store_burn);
-RcppExport SEXP _mPARCORwNG_do_shrinkTVP(SEXP y_fwdSEXP, SEXP y_bwdSEXP, SEXP a0SEXP, SEXP S_0SEXP, SEXP dSEXP, SEXP niterSEXP, SEXP nburnSEXP, SEXP nthinSEXP, SEXP c0SEXP, SEXP g0SEXP, SEXP G0SEXP, SEXP d1SEXP, SEXP d2SEXP, SEXP e1SEXP, SEXP e2SEXP, SEXP learn_lambda2SEXP, SEXP learn_kappa2SEXP, SEXP lambda2SEXP, SEXP kappa2SEXP, SEXP learn_a_xiSEXP, SEXP learn_a_tauSEXP, SEXP a_xiSEXP, SEXP a_tauSEXP, SEXP c_tuning_par_xiSEXP, SEXP c_tuning_par_tauSEXP, SEXP b_xiSEXP, SEXP b_tauSEXP, SEXP nu_xiSEXP, SEXP nu_tauSEXP, SEXP display_progressSEXP, SEXP ret_beta_ncSEXP, SEXP store_burnSEXP) {
+List do_shrinkTVP(arma::mat y, arma::vec a0, arma::mat S_0, int d, int niter, int nburn, int nthin, double c0, double g0, double G0, double d1, double d2, double e1, double e2, bool learn_lambda2, bool learn_kappa2, double lambda2, double kappa2, bool learn_a_xi, bool learn_a_tau, double a_xi, double a_tau, double c_tuning_par_xi, double c_tuning_par_tau, double b_xi, double b_tau, double nu_xi, double nu_tau, bool display_progress, bool ret_beta_nc, bool store_burn);
+RcppExport SEXP _mPARCORwNG_do_shrinkTVP(SEXP ySEXP, SEXP a0SEXP, SEXP S_0SEXP, SEXP dSEXP, SEXP niterSEXP, SEXP nburnSEXP, SEXP nthinSEXP, SEXP c0SEXP, SEXP g0SEXP, SEXP G0SEXP, SEXP d1SEXP, SEXP d2SEXP, SEXP e1SEXP, SEXP e2SEXP, SEXP learn_lambda2SEXP, SEXP learn_kappa2SEXP, SEXP lambda2SEXP, SEXP kappa2SEXP, SEXP learn_a_xiSEXP, SEXP learn_a_tauSEXP, SEXP a_xiSEXP, SEXP a_tauSEXP, SEXP c_tuning_par_xiSEXP, SEXP c_tuning_par_tauSEXP, SEXP b_xiSEXP, SEXP b_tauSEXP, SEXP nu_xiSEXP, SEXP nu_tauSEXP, SEXP display_progressSEXP, SEXP ret_beta_ncSEXP, SEXP store_burnSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< arma::mat >::type y_fwd(y_fwdSEXP);
-    Rcpp::traits::input_parameter< arma::mat >::type y_bwd(y_bwdSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type y(ySEXP);
     Rcpp::traits::input_parameter< arma::vec >::type a0(a0SEXP);
     Rcpp::traits::input_parameter< arma::mat >::type S_0(S_0SEXP);
     Rcpp::traits::input_parameter< int >::type d(dSEXP);
@@ -86,7 +85,7 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< bool >::type display_progress(display_progressSEXP);
     Rcpp::traits::input_parameter< bool >::type ret_beta_nc(ret_beta_ncSEXP);
     Rcpp::traits::input_parameter< bool >::type store_burn(store_burnSEXP);
-    rcpp_result_gen = Rcpp::wrap(do_shrinkTVP(y_fwd, y_bwd, a0, S_0, d, niter, nburn, nthin, c0, g0, G0, d1, d2, e1, e2, learn_lambda2, learn_kappa2, lambda2, kappa2, learn_a_xi, learn_a_tau, a_xi, a_tau, c_tuning_par_xi, c_tuning_par_tau, b_xi, b_tau, nu_xi, nu_tau, display_progress, ret_beta_nc, store_burn));
+    rcpp_result_gen = Rcpp::wrap(do_shrinkTVP(y, a0, S_0, d, niter, nburn, nthin, c0, g0, G0, d1, d2, e1, e2, learn_lambda2, learn_kappa2, lambda2, kappa2, learn_a_xi, learn_a_tau, a_xi, a_tau, c_tuning_par_xi, c_tuning_par_tau, b_xi, b_tau, nu_xi, nu_tau, display_progress, ret_beta_nc, store_burn));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -116,7 +115,7 @@ END_RCPP
 static const R_CallMethodDef CallEntries[] = {
     {"_mPARCORwNG_update_local_shrink", (DL_FUNC) &_mPARCORwNG_update_local_shrink, 5},
     {"_mPARCORwNG_pred_dens_mix_approx", (DL_FUNC) &_mPARCORwNG_pred_dens_mix_approx, 13},
-    {"_mPARCORwNG_do_shrinkTVP", (DL_FUNC) &_mPARCORwNG_do_shrinkTVP, 32},
+    {"_mPARCORwNG_do_shrinkTVP", (DL_FUNC) &_mPARCORwNG_do_shrinkTVP, 31},
     {"_mPARCORwNG_vi_shrinkTVP", (DL_FUNC) &_mPARCORwNG_vi_shrinkTVP, 12},
     {NULL, NULL, 0}
 };

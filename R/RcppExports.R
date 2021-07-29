@@ -9,8 +9,8 @@ pred_dens_mix_approx <- function(x_test, y_test, theta_sr, beta_mean, sig2_samp,
     .Call(`_mPARCORwNG_pred_dens_mix_approx`, x_test, y_test, theta_sr, beta_mean, sig2_samp, sv, sv_phi, sv_mu, sv_sigma2, chol_C_N_inv_samp, m_N_samp, M, log)
 }
 
-do_shrinkTVP <- function(y_fwd, y_bwd, a0, S_0, d, niter, nburn, nthin, c0, g0, G0, d1, d2, e1, e2, learn_lambda2, learn_kappa2, lambda2, kappa2, learn_a_xi, learn_a_tau, a_xi, a_tau, c_tuning_par_xi, c_tuning_par_tau, b_xi, b_tau, nu_xi, nu_tau, display_progress, ret_beta_nc, store_burn) {
-    .Call(`_mPARCORwNG_do_shrinkTVP`, y_fwd, y_bwd, a0, S_0, d, niter, nburn, nthin, c0, g0, G0, d1, d2, e1, e2, learn_lambda2, learn_kappa2, lambda2, kappa2, learn_a_xi, learn_a_tau, a_xi, a_tau, c_tuning_par_xi, c_tuning_par_tau, b_xi, b_tau, nu_xi, nu_tau, display_progress, ret_beta_nc, store_burn)
+do_shrinkTVP <- function(y, a0, S_0, d, niter, nburn, nthin, c0, g0, G0, d1, d2, e1, e2, learn_lambda2, learn_kappa2, lambda2, kappa2, learn_a_xi, learn_a_tau, a_xi, a_tau, c_tuning_par_xi, c_tuning_par_tau, b_xi, b_tau, nu_xi, nu_tau, display_progress, ret_beta_nc, store_burn) {
+    .Call(`_mPARCORwNG_do_shrinkTVP`, y, a0, S_0, d, niter, nburn, nthin, c0, g0, G0, d1, d2, e1, e2, learn_lambda2, learn_kappa2, lambda2, kappa2, learn_a_xi, learn_a_tau, a_xi, a_tau, c_tuning_par_xi, c_tuning_par_tau, b_xi, b_tau, nu_xi, nu_tau, display_progress, ret_beta_nc, store_burn)
 }
 
 vi_shrinkTVP <- function(y, d, d1, d2, e1, e2, a_xi, a_tau, learn_a_xi, learn_a_tau, iter_max, epsilon) {

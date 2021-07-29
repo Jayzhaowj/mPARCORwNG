@@ -145,8 +145,7 @@
 #' }
 #'
 #' @export
-shrinkTVP <- function(yf,
-                      yb,
+shrinkTVP <- function(y,
                       S_0,
                       d,
                       niter = 10000,
@@ -360,7 +359,7 @@ shrinkTVP <- function(yf,
   # colnames(x)[colnames(x) == "(Intercept)"] <- "Intercept"
   #
   # d <- dim(x)[2]
-  n_I <- dim(yf)[2]
+  n_I <- dim(y)[2]
   a0 <- rep(0, 2 * n_I^2)
   store_burn <- FALSE
 
@@ -371,8 +370,7 @@ shrinkTVP <- function(yf,
 
   runtime <- system.time({
     suppressWarnings({
-      res <- do_shrinkTVP(yf,
-                          yb,
+      res <- do_shrinkTVP(y,
                           a0,
                           S_0,
                           d,
@@ -621,7 +619,7 @@ shrinkTVP <- function(yf,
   attr(res, "nthin") <- nthin
 
   #attr(res, "colnames") <-  colnames(x)
-  attr(res, "index") <- zoo::index(yf)
+  attr(res, "index") <- zoo::index(y)
 
 
 

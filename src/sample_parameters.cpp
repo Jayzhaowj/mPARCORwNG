@@ -161,7 +161,7 @@ void sample_alpha(arma::vec& alpha_samp, arma::mat& y, arma::mat& x, arma::mat& 
   arma::mat xt_tilde;
   arma::mat W;
   arma::mat W_til;
-  arma::mat a_tmp(2*d, 1, arma::fill::zeros);
+  arma::mat a(2*d, 1, arma::fill::zeros);
   arma::mat Omega_star_tmp(2*d, 2*d, arma::fill::zeros);
   for(int t = 0; t < (N); t++){
     xt = arma::kron(I_d, x.row(t));
@@ -169,10 +169,10 @@ void sample_alpha(arma::vec& alpha_samp, arma::mat& y, arma::mat& x, arma::mat& 
     xt_tilde.each_row() %= (beta_nc.col(t)).t();
     W = arma::join_rows(xt, xt_tilde);
     W_til = W.t() * SIGMA;
-    a_tmp += W_til*arma::trans(y.row(t));
+    a += W_til*arma::trans(y.row(t));
     Omega_star_tmp += W_til * W;
   }
-  arma::mat a = a_tmp + prior_a;
+
   //arma::colvec yt = arma::vectorise(arma::trans(y));
   //arma::cout << "SIGMA: " << SIGMA << arma::endl;
   //arma::mat SIGMA_tmp = arma::kron(arma::eye(N, N), SIGMA);
