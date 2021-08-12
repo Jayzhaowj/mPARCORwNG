@@ -12,14 +12,14 @@ Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
 // update_local_shrink
-void update_local_shrink(arma::vec& local_shrink, arma::vec& local_shrink_inv, const arma::vec& param_vec2, arma::vec& global_shrink, arma::vec& a);
+void update_local_shrink(arma::vec& local_shrink, arma::vec& local_shrink_inv, const arma::vec& param_vec2, double global_shrink, arma::vec& a);
 RcppExport SEXP _mPARCORwNG_update_local_shrink(SEXP local_shrinkSEXP, SEXP local_shrink_invSEXP, SEXP param_vec2SEXP, SEXP global_shrinkSEXP, SEXP aSEXP) {
 BEGIN_RCPP
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< arma::vec& >::type local_shrink(local_shrinkSEXP);
     Rcpp::traits::input_parameter< arma::vec& >::type local_shrink_inv(local_shrink_invSEXP);
     Rcpp::traits::input_parameter< const arma::vec& >::type param_vec2(param_vec2SEXP);
-    Rcpp::traits::input_parameter< arma::vec& >::type global_shrink(global_shrinkSEXP);
+    Rcpp::traits::input_parameter< double >::type global_shrink(global_shrinkSEXP);
     Rcpp::traits::input_parameter< arma::vec& >::type a(aSEXP);
     update_local_shrink(local_shrink, local_shrink_inv, param_vec2, global_shrink, a);
     return R_NilValue;
@@ -49,14 +49,14 @@ BEGIN_RCPP
 END_RCPP
 }
 // do_shrinkTVP
-List do_shrinkTVP(arma::mat y, arma::vec a0, arma::mat S_0, int d, int niter, int nburn, int nthin, double c0, double g0, double G0, double d1, double d2, double e1, double e2, bool learn_lambda2, bool learn_kappa2, double lambda2, double kappa2, bool learn_a_xi, bool learn_a_tau, double a_xi, double a_tau, double c_tuning_par_xi, double c_tuning_par_tau, double b_xi, double b_tau, double nu_xi, double nu_tau, bool display_progress, bool ret_beta_nc, bool store_burn);
+List do_shrinkTVP(arma::mat y, arma::vec a0, double S_0, int d, int niter, int nburn, int nthin, double c0, double g0, double G0, double d1, double d2, double e1, double e2, bool learn_lambda2, bool learn_kappa2, double lambda2, double kappa2, bool learn_a_xi, bool learn_a_tau, double a_xi, double a_tau, double c_tuning_par_xi, double c_tuning_par_tau, double b_xi, double b_tau, double nu_xi, double nu_tau, bool display_progress, bool ret_beta_nc, bool store_burn);
 RcppExport SEXP _mPARCORwNG_do_shrinkTVP(SEXP ySEXP, SEXP a0SEXP, SEXP S_0SEXP, SEXP dSEXP, SEXP niterSEXP, SEXP nburnSEXP, SEXP nthinSEXP, SEXP c0SEXP, SEXP g0SEXP, SEXP G0SEXP, SEXP d1SEXP, SEXP d2SEXP, SEXP e1SEXP, SEXP e2SEXP, SEXP learn_lambda2SEXP, SEXP learn_kappa2SEXP, SEXP lambda2SEXP, SEXP kappa2SEXP, SEXP learn_a_xiSEXP, SEXP learn_a_tauSEXP, SEXP a_xiSEXP, SEXP a_tauSEXP, SEXP c_tuning_par_xiSEXP, SEXP c_tuning_par_tauSEXP, SEXP b_xiSEXP, SEXP b_tauSEXP, SEXP nu_xiSEXP, SEXP nu_tauSEXP, SEXP display_progressSEXP, SEXP ret_beta_ncSEXP, SEXP store_burnSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< arma::mat >::type y(ySEXP);
     Rcpp::traits::input_parameter< arma::vec >::type a0(a0SEXP);
-    Rcpp::traits::input_parameter< arma::mat >::type S_0(S_0SEXP);
+    Rcpp::traits::input_parameter< double >::type S_0(S_0SEXP);
     Rcpp::traits::input_parameter< int >::type d(dSEXP);
     Rcpp::traits::input_parameter< int >::type niter(niterSEXP);
     Rcpp::traits::input_parameter< int >::type nburn(nburnSEXP);

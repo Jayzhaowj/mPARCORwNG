@@ -20,25 +20,26 @@ sPARCOR <- function(y,
                     c_tuning_par_tau = 1,
                     display_progress = TRUE,
                     ret_beta_nc = FALSE,
-                    S_0){
+                    S_0, uncertainty=FALSE){
   K <- dim(y)[2]
   n_t <- dim(y)[1]
 
-  # y dimension: n_t * n_I
-  #result1 <- run_parcor_parallel(F1 = t(y), delta = delta, P = 1, S_0 = S_0, sample_size = sample_size,
-  #                               chains = chains, DIC = DIC, uncertainty = uncertainty)
-  result <- shrinkTVP(y = t(y), d = d, S_0 = S_0, niter = niter, nburn = nburn, nthin = nthin,
-                       learn_a_xi = learn_a_xi, learn_a_tau = learn_a_tau, a_xi = a_xi,
-                       a_tau = a_tau, learn_kappa2 = learn_kappa2, learn_lambda2 = learn_lambda2,
-                       kappa2 = kappa2, lambda2 = lambda2, hyperprior_param = hyperprior_param,
-                       c_tuning_par_xi = c_tuning_par_xi, c_tuning_par_tau = c_tuning_par_tau,
-                       display_progress = display_progress, ret_beta_nc = ret_beta_nc)
+  result <- shrinkTVP(y = y, d = d, S_0 = S_0, niter = niter, nburn = nburn, nthin = nthin,
+                      learn_a_xi = learn_a_xi, learn_a_tau = learn_a_tau, a_xi = a_xi,
+                      a_tau = a_tau, learn_kappa2 = learn_kappa2, learn_lambda2 = learn_lambda2,
+                      kappa2 = kappa2, lambda2 = lambda2, hyperprior_param = hyperprior_param,
+                      c_tuning_par_xi = c_tuning_par_xi, c_tuning_par_tau = c_tuning_par_tau,
+                      display_progress = display_progress, ret_beta_nc = ret_beta_nc)
+
+  ar_coef_sample <- array(NA, dim = c(K^2, n_t, d, (niter - nburn)/nthin))
   if(uncertainty){
-    phi_fwd <- array(0, dim = c(n_t, K^2, 1))
-    phi_bwd <- array(0, dim = c(n_t, K^2, 1))
     for(i in 1:((niter - nburn)/nthin)){
-      result$beta$f[[i]] <- aperm(result2$beta$f[[i]], perm = c(2,1,3))
-      result$beta$b[[i]] <- aperm(result2$beta$b[[i]], perm = c(2,1,3))
+      result$beta$f[[i]] <- aperm(result$beta$f[[i]], perm = c(2,1,3))
+      result$beta$b[[i]] <- aperm(result$beta$b[[i]], perm = c(2,1,3))
+      tmp <- run_whittle(phi_fwd = result$beta$f[[i]],
+                                  phi_bwd = result$beta$b[[i]],
+                                  n_I = K)
+      ar_coef_sample[, , , i] <- tmp[[d]]$forward
     }
 
 
@@ -49,6 +50,7 @@ sPARCOR <- function(y,
     # result2$beta$b[[i]] <- aperm(result2$beta$b[[i]], perm = c(2,1,3))
     return(list(phi_fwd = result$beta$f,
                 phi_bwd = result$beta$b,
+                ar = ar_coef_sample,
                 SIGMA = result$SIGMA$f))
   }else{
     ### extract forward part
@@ -67,7 +69,7 @@ sPARCOR <- function(y,
     SIGMA <- apply(simplify2array(result$SIGMA$f), 1:3, mean)
 
     ### transfer PARCOR coefficients to AR coefficients
-    tmp <- PAR_to_AR_fun(phi_fwd = phi_fwd, phi_bwd = phi_bwd, n_I = K)
+    tmp <- run_whittle(phi_fwd = phi_fwd, phi_bwd = phi_bwd, n_I = K)
     ar <- tmp[[d]]$forward
     return(list(phi_fwd = phi_fwd, phi_bwd = phi_bwd, SIGMA = SIGMA,
                 ar = ar))

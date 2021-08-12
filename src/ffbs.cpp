@@ -46,7 +46,6 @@ void update_beta_tilde(arma::mat& beta_nc,
   arma::mat Bt;
   arma::mat Rtp1_inv;
 
-  arma::mat L_upper;
   for(int t = 1; t < N+1; t++){
 
     Rt.slice(t) = Ct.slice(t-1) + I_d;
@@ -57,7 +56,7 @@ void update_beta_tilde(arma::mat& beta_nc,
     Qt_inv_sq = std::sqrt(1.0/Qt);
     et = yt_star(t-1) - ft(t-1);
     S_comp += St_sq * Qt_inv_sq * et * et * Qt_inv_sq * St_sq;
-    St_tmp(t) = (n_0*S_0 + S_comp)/(n_0 + t + 1);
+    St_tmp(t) = (n_0*S_0 + S_comp)/(n_0 + t);
     At = Rt.slice(t)*arma::trans(Ft.row(t-1))/Qt;
     mt.col(t) = mt.col(t-1) + At*et;
     Ct.slice(t) = Rt.slice(t) - At*Qt*arma::trans(At);
@@ -85,7 +84,7 @@ void update_beta_tilde(arma::mat& beta_nc,
     Bt = Ct.slice(t) * Rtp1_inv;
     //mT.col(t) = mt.col(t) + Bt*(mT.col(t+1) - mt.col(t));
     beta_nc.row(t) = arma::trans(mt.col(t) + Bt*(arma::trans(beta_nc.row(t+1)) - mt.col(t)));
-    CT.slice(t) = Ct.slice(t) - Bt*(Rt.slice(t+1))*arma::trans(Bt);
+    CT.slice(t) = Ct.slice(t) - Bt*(Rt.slice(t+1) - CT.slice(t+1))*arma::trans(Bt);
     CT.slice(t) = 0.5*CT.slice(t) + 0.5*arma::trans(CT.slice(t));
     arma::mat tmp = Ct.slice(t) + arma::trans(beta_nc.row(t))*beta_nc.row(t);
     beta2_nc.row(t) = arma::trans(tmp.diag());

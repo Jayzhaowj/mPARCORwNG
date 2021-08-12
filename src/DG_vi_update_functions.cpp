@@ -10,7 +10,7 @@ using namespace Rcpp;
 void update_local_shrink(arma::vec& local_shrink,
                          arma::vec& local_shrink_inv,
                          const arma::vec& param_vec2,
-                         arma::vec& global_shrink,
+                         double global_shrink,
                          arma::vec& a){
   int d = local_shrink.n_elem;
 
@@ -18,7 +18,8 @@ void update_local_shrink(arma::vec& local_shrink,
 
   for (int j = 0; j < d; j++){
     double p1 = a(j) - 0.5;
-    double p2 = a(j) * global_shrink(j);
+    //double p2 = a(j) * global_shrink(j);
+    double p2 = a(j) * global_shrink;
     double p3 = param_vec2(j);
     double part1 = std::sqrt(p2 * p3);
     local_shrink(j) = boost::math::cyl_bessel_k(p1+1, part1)*std::sqrt(p3)/(boost::math::cyl_bessel_k(p1, part1) * std::sqrt(p2));

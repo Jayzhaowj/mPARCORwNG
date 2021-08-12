@@ -331,7 +331,7 @@ List vi_shrinkTVP(arma::mat y,
         }
         // update forward tau2
         try {
-          update_local_shrink(tau2_tmp, tau2_inv_tmp, beta2_mean_tmp, lambda2f_old, a_tauf_old);
+          update_local_shrink(tau2_tmp, tau2_inv_tmp, beta2_mean_tmp, lambda2f_old(k), a_tauf_old);
           tau2f_new.slice(m-1).col(k) = tau2_tmp;
           tau2f_inv_new.slice(m-1).col(k) = tau2_inv_tmp;
         } catch(...) {
@@ -345,7 +345,7 @@ List vi_shrinkTVP(arma::mat y,
         }
         // update forward xi2
         try {
-          update_local_shrink(xi2_tmp, xi2_inv_tmp, theta_tmp, kappa2f_old, a_xif_old);
+          update_local_shrink(xi2_tmp, xi2_inv_tmp, theta_tmp, kappa2f_old(k), a_xif_old);
           xi2f_new.slice(m-1).col(k) = xi2_tmp;
           xi2f_inv_new.slice(m-1).col(k) = xi2_inv_tmp;
         } catch(...) {
@@ -433,7 +433,7 @@ List vi_shrinkTVP(arma::mat y,
         //
         // update backward tau2
         try {
-          update_local_shrink(tau2_tmp, tau2_inv_tmp, beta2_mean_tmp, lambda2f_old, a_tauf_old);
+          update_local_shrink(tau2_tmp, tau2_inv_tmp, beta2_mean_tmp, lambda2f_old(k), a_tauf_old);
           tau2b_new.slice(m-1).col(k) = tau2_tmp;
           tau2b_inv_new.slice(m-1).col(k) = tau2_inv_tmp;
         } catch(...) {
@@ -448,7 +448,7 @@ List vi_shrinkTVP(arma::mat y,
 
         // update backward xi2
         try {
-          update_local_shrink(xi2_tmp, xi2_inv_tmp, theta_tmp, kappa2f_old, a_xif_old);
+          update_local_shrink(xi2_tmp, xi2_inv_tmp, theta_tmp, kappa2f_old(k), a_xif_old);
           xi2b_new.slice(m-1).col(k) = xi2_tmp;
           xi2b_inv_new.slice(m-1).col(k) = xi2_inv_tmp;
         } catch(...) {
@@ -470,7 +470,7 @@ List vi_shrinkTVP(arma::mat y,
     for(int k = 0; k < n_I; k++){
       try {
         //arma::vec xi2f_tmp = xi2f_samp.row(k);
-        kappa2f_new(k) = update_global_shrink(arma::vectorise(xi2f_new.row(k)),
+        kappa2f_new(k) = update_global_shrink(arma::vectorise(xi2f_new.col(k)),
                                               a_xif_new(k), d1, d2, n_I*d);
       } catch (...) {
         kappa2f_new(k) = arma::datum::nan;
@@ -484,7 +484,7 @@ List vi_shrinkTVP(arma::mat y,
     for(int k = 0; k < n_I; k++){
       try {
         //arma::vec tau2f_tmp = tau2f_samp.row(k);
-        lambda2f_new(k) = update_global_shrink(arma::vectorise(tau2f_new.row(k)),
+        lambda2f_new(k) = update_global_shrink(arma::vectorise(tau2f_new.col(k)),
                                                a_tauf_new(k), e1, e2, n_I*d);
 
       } catch (...) {
@@ -501,7 +501,7 @@ List vi_shrinkTVP(arma::mat y,
     for(int k = 0; k < n_I; k++){
       try {
         //arma::vec xi2f_tmp = xi2f_samp.row(k);
-        kappa2b_new(k) = update_global_shrink(arma::vectorise(xi2b_new.row(k)),
+        kappa2b_new(k) = update_global_shrink(arma::vectorise(xi2b_new.col(k)),
                                               a_xib_new(k), d1, d2, n_I*d);
       } catch (...) {
         kappa2b_new(k) = arma::datum::nan;
@@ -515,7 +515,7 @@ List vi_shrinkTVP(arma::mat y,
     for(int k = 0; k < n_I; k++){
       try {
         //arma::vec tau2f_tmp = tau2f_samp.row(k);
-        lambda2b_new(k) = update_global_shrink(arma::vectorise(tau2b_new.row(k)),
+        lambda2b_new(k) = update_global_shrink(arma::vectorise(tau2b_new.col(k)),
                                                a_taub_new(k), e1, e2, d*n_I);
 
       } catch (...) {

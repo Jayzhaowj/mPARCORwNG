@@ -4,7 +4,7 @@
 void update_local_shrink(arma::vec& local_shrink,
                          arma::vec& local_shrink_inv,
                          const arma::vec& param_vec2,
-                         arma::vec& global_shrink,
+                         double global_shrink,
                          arma::vec& a);
 
 double update_global_shrink(const arma::vec& prior_var,
