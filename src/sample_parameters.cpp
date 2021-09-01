@@ -12,19 +12,6 @@ void res_protector(double& x){
   }
 }
 
-void get_w(arma::mat& W, arma::mat& x, arma::mat& beta_nc_samp, int N, int n_I){
-  arma::mat I_d = arma::eye(n_I, n_I);
-  arma::mat xt;
-  arma::mat xt_tilde;
-  for(int t = 1; t < (N+1); t++){
-    xt = arma::kron(I_d, x.row(t-1));
-    xt_tilde = arma::kron(I_d, x.row(t-1));
-    xt_tilde.each_row() %= (beta_nc_samp.col(t)).t();
-    W.rows((t-1)*n_I, t*n_I-1) = arma::join_rows(xt, xt_tilde);
-  }
-}
-
-
 
 void sample_beta_tilde(arma::mat& beta_nc_samp, arma::vec& y,
                        arma::mat& x, arma::vec& theta_sr,
@@ -69,6 +56,7 @@ void sample_beta_tilde(arma::mat& beta_nc_samp, arma::vec& y,
   arma::mat L_upper;
   for(int t = 1; t < N+1; t++){
     Rt.slice(t) = Ct.slice(t-1) + I_d;
+    Rt.slice(t) = 0.5*Rt.slice(t) + 0.5*arma::trans(Rt.slice(t));
     ft(t-1) = arma::as_scalar(Ft.row(t-1)*mt.col(t-1));
     Qt = arma::as_scalar(Ft.row(t-1) * Rt.slice(t) * arma::trans(Ft.row(t-1)) + St_tmp(t-1));
     Qt_inv_sq = std::sqrt(1.0/Qt);
@@ -89,8 +77,8 @@ void sample_beta_tilde(arma::mat& beta_nc_samp, arma::vec& y,
   arma::mat eps = arma::randn(1, d);
   arma::chol(L_upper, CT.slice(N));
   // bool chol_success = chol(L_upper, CT.slice(N));
-
-  //Fall back on Rs chol if armadillo fails
+  //
+  // // Fall back on Rs chol if armadillo fails
   // if(chol_success == false){
   //   Rcpp::NumericMatrix tmp = Rchol(CT.slice(N), true, false, -1);
   //   arma::uvec piv = arma::sort_index(as<arma::vec>(tmp.attr("pivot")));
@@ -105,7 +93,7 @@ void sample_beta_tilde(arma::mat& beta_nc_samp, arma::vec& y,
     //if(!(Rt.slice(t+1)).is_sympd()){
     //  Rt.slice(t+1) = .5*Rt.slice(t+1) + 0.5*arma::trans(Rt.slice(t+1));
     //}
-    Rt.slice(t+1) = .5*Rt.slice(t+1) + 0.5*arma::trans(Rt.slice(t+1));
+    //Rt.slice(t+1) = .5*Rt.slice(t+1) + 0.5*arma::trans(Rt.slice(t+1));
     //Rtp1_inv = arma::inv_sympd(Rt.slice(t+1));
     Rtp1_inv = arma::inv(Rt.slice(t+1));
     //Rtp1_inv = I_d;
@@ -145,7 +133,7 @@ void sample_beta_tilde(arma::mat& beta_nc_samp, arma::vec& y,
 void sample_alpha(arma::vec& alpha_samp, arma::vec& y,
                   arma::mat& x, arma::mat& x_tilde,
                   arma::colvec& tau2, arma::colvec& xi2,
-                  arma::vec& SIGMA, arma::vec& a0, int n_I, Function Rchol) {
+                  arma::vec& SIGMA, int n_I, Function Rchol) {
   int d = x.n_cols;
 
   arma::mat A0_sr = arma::diagmat(arma::sqrt(arma::join_cols(tau2, xi2)));
@@ -217,76 +205,29 @@ void resample_alpha_diff(arma::vec& alpha_samp, arma::mat betaenter, arma::vec& 
 }
 
 
+void sample_local_shrink(arma::vec& local_shrink, const arma::vec& param_vec, double global_shrink, double a){
+  int d = local_shrink.n_elem;
+  arma::vec param_vec2 = arma::pow(param_vec, 2);
 
+  double p1 = a - 0.5;
+  double p2 = a * global_shrink;
 
-void sample_xi2(arma::vec& xi2_samp, arma::vec& theta_sr, double kappa2, double a_xi, int d){
-  arma::vec theta = arma::pow(theta_sr, 2);
+  for(int j = 0; j < d; j++){
 
-
-  for (int j = 0; j < d; j++){
-
-    double p1_xi = a_xi - 0.5;
-    double p2_xi = a_xi * kappa2;
-    double p3_xi = theta(j);
-
-    double res = do_rgig1(p1_xi, p3_xi, p2_xi);
-
-    res_protector(res);
-
-    xi2_samp(j) = res;
-  }
-
-}
-
-
-void sample_tau2(arma::vec& tau2_samp, arma::vec& beta_mean, double lambda2, double a_tau, int d){
-  arma::vec tau2(d, arma::fill::none);
-
-  for (int j = 0; j < d; j++){
-    double p1_tau = a_tau - 0.5;
-    double p2_tau = a_tau * lambda2;
-    double p3_tau = std::pow(beta_mean(j), 2);
-
-    double res = do_rgig1(p1_tau, p3_tau, p2_tau);
-
-    res_protector(res);
-
-    tau2_samp(j) = res;
+    double p3 = param_vec2(j);
+    local_shrink(j) = do_rgig1(p1, p3, p2);
 
   }
+  std::for_each(local_shrink.begin(), local_shrink.end(), res_protector);
 }
 
+double sample_global_shrink(const arma::vec& prior_param, double a, double hyper1, double hyper2){
+  int d = prior_param.n_elem;
+  double hyper1_post = hyper1 + a * d;
+  double hyper2_post = hyper2 + arma::mean(prior_param) * a * d * 0.5;
+  double res = R::rgamma(hyper1_post, 1.0/hyper2_post);
 
-double sample_kappa2(arma::vec xi2, double a_xi, double d1, double d2, int d){
-  double d1_full = d1 + a_xi * d;
-  double d2_full = d2 + arma::as_scalar(arma::mean(xi2)) * a_xi * d * 0.5;
-  double kappa2 = R::rgamma(d1_full, 1/d2_full);
-  return(kappa2);
+  res_protector(res);
+  return res;
 }
-
-
-double sample_lambda2(arma::vec tau2, double a_tau, double e1, double e2, int d){
-  double e1_full = e1 + a_tau * d;
-  double e2_full = e2 + arma::as_scalar(arma::mean(tau2)) * a_tau * d * 0.5;
-  double lambda2 = R::rgamma(e1_full, 1/e2_full);
-  return(lambda2);
-}
-
-
-void sample_sigma2(arma::vec& sig2_samp, arma::vec& y, arma::mat& W, arma::vec& alpha, double c0, double C0, int N){
-  double a_full = c0 + N/2;
-  double b_full = C0 + 0.5 * arma::as_scalar(arma::sum(arma::pow((y - W*alpha), 2)));
-  double sig2 = 1/R::rgamma(a_full, 1/b_full);
-  sig2_samp.fill(sig2);
-}
-
-
-double sample_C0(arma::vec& sig2, double g0, double c0, double G0){
-  double a_full = g0 + c0;
-  double b_full = G0 + 1/sig2(0);
-  double C0 = R::rgamma(a_full, 1/b_full);
-  return(C0);
-}
-
-
 

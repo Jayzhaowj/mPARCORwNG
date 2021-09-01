@@ -20,59 +20,99 @@ sPARCOR <- function(y,
                     c_tuning_par_tau = 1,
                     display_progress = TRUE,
                     ret_beta_nc = FALSE,
-                    S_0, uncertainty=FALSE){
+                    S_0, delta, uncertainty=FALSE, ind = TRUE, skip = TRUE){
   K <- dim(y)[2]
   n_t <- dim(y)[1]
-
-  result <- shrinkTVP(y = y, d = d, S_0 = S_0, niter = niter, nburn = nburn, nthin = nthin,
-                      learn_a_xi = learn_a_xi, learn_a_tau = learn_a_tau, a_xi = a_xi,
-                      a_tau = a_tau, learn_kappa2 = learn_kappa2, learn_lambda2 = learn_lambda2,
-                      kappa2 = kappa2, lambda2 = lambda2, hyperprior_param = hyperprior_param,
-                      c_tuning_par_xi = c_tuning_par_xi, c_tuning_par_tau = c_tuning_par_tau,
-                      display_progress = display_progress, ret_beta_nc = ret_beta_nc)
-
   ar_coef_sample <- array(NA, dim = c(K^2, n_t, d, (niter - nburn)/nthin))
-  if(uncertainty){
+  if(skip){
+    ## skip the first stage,
+
+    phi_fwd <- array(0, dim = c(n_t, K^2))
+    phi_bwd <- array(0, dim = c(n_t, K^2))
+
+    if(missing(delta)){
+      ### Set up discount ###
+      grid_seq <- seq(0.95, 1, 0.01)
+      tmp <- as.matrix(expand.grid(grid_seq, grid_seq))
+      tmp_dim <- dim(tmp)
+      delta <- array(dim = c(tmp_dim[1], K^2, 1))
+    }
+    result_skip <- run_parcor_parallel(F1 = t(y), delta = delta, P = 1, S_0 = S_0*diag(K),
+                                       sample_size = (niter-nburn)/nthin, DIC = FALSE, uncertainty = TRUE)
+    result <- shrinkTVP(y_fwd = t(result_skip$F1_fwd), y_bwd = t(result_skip$F1_bwd),
+                        d = d, S_0 = S_0, niter = niter, nburn = nburn, nthin = nthin,
+                        learn_a_xi = learn_a_xi, learn_a_tau = learn_a_tau, a_xi = a_xi,
+                        a_tau = a_tau, learn_kappa2 = learn_kappa2, learn_lambda2 = learn_lambda2,
+                        kappa2 = kappa2, lambda2 = lambda2, hyperprior_param = hyperprior_param,
+                        c_tuning_par_xi = c_tuning_par_xi, c_tuning_par_tau = c_tuning_par_tau,
+                        display_progress = display_progress, ret_beta_nc = ret_beta_nc, ind = ind, skip = skip)
+    for(i in 1:((niter - nburn)/nthin)){
+      for(j in (1+1):(n_t-1)){
+        phi_fwd[j, ] <- rmvn(n = 1, mu = as.vector(result_skip$phi_fwd[, j, 1]),
+                             sigma = result_skip$Cnt_fwd[[1]][[j]])
+        phi_bwd[j, ] <- rmvn(n = 1, mu = as.vector(result_skip$phi_bwd[, j, 1]),
+                             sigma = result_skip$Cnt_bwd[[1]][[j]])
+      }
+      result$beta$f[[i]][, , 1] <- phi_fwd
+      result$beta$b[[i]][, , 1] <- phi_bwd
+
+      result$beta$f[[i]] <- aperm(result$beta$f[[i]], perm = c(2,1,3))
+      result$beta$b[[i]] <- aperm(result$beta$b[[i]], perm = c(2,1,3))
+
+      tmp <- run_whittle(phi_fwd = result$beta$f[[i]],
+                         phi_bwd = result$beta$b[[i]],
+                         n_I = K)
+      ar_coef_sample[, , , i] <- tmp[[d]]$forward
+    }
+  }else{
+    result <- shrinkTVP(y_fwd = y, y_bwd = y,
+                        d = d, S_0 = S_0, niter = niter, nburn = nburn, nthin = nthin,
+                        learn_a_xi = learn_a_xi, learn_a_tau = learn_a_tau, a_xi = a_xi,
+                        a_tau = a_tau, learn_kappa2 = learn_kappa2, learn_lambda2 = learn_lambda2,
+                        kappa2 = kappa2, lambda2 = lambda2, hyperprior_param = hyperprior_param,
+                        c_tuning_par_xi = c_tuning_par_xi, c_tuning_par_tau = c_tuning_par_tau,
+                        display_progress = display_progress, ret_beta_nc = ret_beta_nc, ind = ind, skip = skip)
+
     for(i in 1:((niter - nburn)/nthin)){
       result$beta$f[[i]] <- aperm(result$beta$f[[i]], perm = c(2,1,3))
       result$beta$b[[i]] <- aperm(result$beta$b[[i]], perm = c(2,1,3))
       tmp <- run_whittle(phi_fwd = result$beta$f[[i]],
-                                  phi_bwd = result$beta$b[[i]],
-                                  n_I = K)
+                         phi_bwd = result$beta$b[[i]],
+                         n_I = K)
       ar_coef_sample[, , , i] <- tmp[[d]]$forward
     }
+  }
 
-
-    # result2$beta$f[[i]] <- abind::abind(result1$phi_fwd, aperm(result2$beta$f[[i]], perm = c(2,1,3)))
-    # result2$beta$f[[i]] <- aperm(result2$beta$f[[i]], perm = c(2,1,3))
-    # #browser()
-    # result2$beta$b[[i]] <- abind::abind(result1$phi_bwd, aperm(result2$beta$b[[i]], perm = c(2,1,3)))
-    # result2$beta$b[[i]] <- aperm(result2$beta$b[[i]], perm = c(2,1,3))
+  if(uncertainty){
     return(list(phi_fwd = result$beta$f,
                 phi_bwd = result$beta$b,
+                chol_fwd = result$beta_chol$f,
+                chol_bwd = result$beta_chol$b,
                 ar = ar_coef_sample,
                 SIGMA = result$SIGMA$f))
   }else{
     ### extract forward part
-    beta_tmp <- simplify2array(result$beta$f)
-    phi_fwd <- apply(beta_tmp, 1:3, mean)
+    phi_fwd <- apply(simplify2array(result$beta$f), 1:3, mean)
     phi_fwd <- aperm(phi_fwd, perm = c(2, 1, 3))
+    if(!ind){
+      beta_chol_fwd <- apply(simplify2array(result$beta_chol$f), 1:3, mean)
+    }
 
     ### extract backward part
-    beta_tmp <- simplify2array(result$beta$b)
-    phi_bwd <- apply(beta_tmp, 1:3, mean)
+    phi_bwd <- apply(simplify2array(result$beta$b), 1:3, mean)
     phi_bwd <- aperm(phi_bwd, perm = c(2, 1, 3))
-
-
+    if(!ind){
+      beta_chol_bwd <- apply(simplify2array(result$beta_chol$b), 1:3, mean)
+    }
 
     ### extract forward SIGMA
     SIGMA <- apply(simplify2array(result$SIGMA$f), 1:3, mean)
 
     ### transfer PARCOR coefficients to AR coefficients
-    tmp <- run_whittle(phi_fwd = phi_fwd, phi_bwd = phi_bwd, n_I = K)
-    ar <- tmp[[d]]$forward
-    return(list(phi_fwd = phi_fwd, phi_bwd = phi_bwd, SIGMA = SIGMA,
+    ar <- apply(ar_coef_sample, 1:3, mean)
+    return(list(phi_fwd = phi_fwd,
+                phi_bwd = phi_bwd,
+                SIGMA = SIGMA,
                 ar = ar))
   }
-
 }

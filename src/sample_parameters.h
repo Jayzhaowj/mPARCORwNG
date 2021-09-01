@@ -7,13 +7,9 @@ using namespace Rcpp;
 
 void res_protector(double& x);
 void sample_beta_tilde(arma::mat& beta_nc_samp, arma::vec& y, arma::mat& x, arma::vec& theta_sr, arma::vec& beta_mean, int N, int n_I, double S_0, arma::vec& St); //
-void sample_alpha(arma::vec& alpha_samp, arma::vec& y, arma::mat& x, arma::mat& x_tilde, arma::colvec& tau2, arma::colvec& xi2, arma::vec& SIGMA, arma::vec& a0, int n_I, Function Rchol);
+void sample_alpha(arma::vec& alpha_samp, arma::vec& y, arma::mat& x, arma::mat& x_tilde, arma::colvec& tau2, arma::colvec& xi2, arma::vec& SIGMA, int n_I, Function Rchol);
 void resample_alpha_diff(arma::vec& alpha_samp, arma::mat betaenter, arma::vec& theta_sr, arma::vec& beta_mean, arma::mat beta_diff,  arma::vec& xi2, arma::vec& tau2, int d, int N);
-void sample_tau2(arma::vec& tau2_samp, arma::vec& beta_mean, double lambda2, double a_tau, int d);
-void sample_xi2(arma::vec& xi2_samp, arma::vec& theta_sr, double kappa2, double a_xi, int d);
-double sample_kappa2(arma::vec xi2, double a_xi, double d1, double d2, int d);
-double sample_lambda2(arma::vec tau2, double a_tau, double e1, double e2, int d);
-void sample_sigma2(arma::vec& sig2_samp, arma::vec& y, arma::mat& W, arma::vec& alpha, double c0, double C0, int N);
-double sample_C0(arma::vec& sig2, double g0, double c0, double G0);
-void get_w(arma::mat& W, arma::mat& x, arma::mat& beta_nc_samp, int N, int n_I);
+void sample_local_shrink(arma::vec& local_shrink, const arma::vec& param_vec, double global_shrink, double a);
+double sample_global_shrink(const arma::vec& prior_param, double a, double hyper1, double hyper2);
+
 #endif

@@ -145,7 +145,8 @@
 #' }
 #'
 #' @export
-shrinkTVP <- function(y,
+shrinkTVP <- function(y_fwd,
+                      y_bwd,
                       S_0,
                       d,
                       niter = 10000,
@@ -163,7 +164,9 @@ shrinkTVP <- function(y,
                       c_tuning_par_xi = 1,
                       c_tuning_par_tau = 1,
                       display_progress = TRUE,
-                      ret_beta_nc = FALSE){
+                      ret_beta_nc = FALSE,
+                      ind,
+                      skip){
 
 
   # Input checking ----------------------------------------------------------
@@ -359,8 +362,7 @@ shrinkTVP <- function(y,
   # colnames(x)[colnames(x) == "(Intercept)"] <- "Intercept"
   #
   # d <- dim(x)[2]
-  n_I <- dim(y)[2]
-  a0 <- rep(0, 2 * n_I^2)
+  n_I <- dim(y_fwd)[2]
   store_burn <- FALSE
 
 
@@ -370,8 +372,8 @@ shrinkTVP <- function(y,
 
   runtime <- system.time({
     suppressWarnings({
-      res <- do_shrinkTVP(y,
-                          a0,
+      res <- do_shrinkTVP(y_fwd,
+                          y_bwd,
                           S_0,
                           d,
                           niter,
@@ -400,7 +402,9 @@ shrinkTVP <- function(y,
                           hyperprior_param$nu_tau,
                           display_progress,
                           ret_beta_nc,
-                          store_burn)
+                          store_burn,
+                          ind,
+                          skip)
     })
   })
 
@@ -619,7 +623,7 @@ shrinkTVP <- function(y,
   attr(res, "nthin") <- nthin
 
   #attr(res, "colnames") <-  colnames(x)
-  attr(res, "index") <- zoo::index(y)
+  attr(res, "index") <- zoo::index(y_fwd)
 
 
 
