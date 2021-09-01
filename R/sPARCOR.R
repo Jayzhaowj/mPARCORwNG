@@ -20,10 +20,11 @@ sPARCOR <- function(y,
                     c_tuning_par_tau = 1,
                     display_progress = TRUE,
                     ret_beta_nc = FALSE,
-                    S_0, delta, uncertainty=FALSE, ind = TRUE, skip = TRUE){
+                    S_0, delta, uncertainty=FALSE, ind = TRUE, skip = TRUE,
+                    cpus = 1){
   K <- dim(y)[2]
   n_t <- dim(y)[1]
-  ar_coef_sample <- array(NA, dim = c(K^2, n_t, d, (niter - nburn)/nthin))
+
   if(skip){
     ## skip the first stage,
 
@@ -58,11 +59,6 @@ sPARCOR <- function(y,
 
       result$beta$f[[i]] <- aperm(result$beta$f[[i]], perm = c(2,1,3))
       result$beta$b[[i]] <- aperm(result$beta$b[[i]], perm = c(2,1,3))
-
-      tmp <- run_whittle(phi_fwd = result$beta$f[[i]],
-                         phi_bwd = result$beta$b[[i]],
-                         n_I = K)
-      ar_coef_sample[, , , i] <- tmp[[d]]$forward
     }
   }else{
     result <- shrinkTVP(y_fwd = y, y_bwd = y,
@@ -76,13 +72,18 @@ sPARCOR <- function(y,
     for(i in 1:((niter - nburn)/nthin)){
       result$beta$f[[i]] <- aperm(result$beta$f[[i]], perm = c(2,1,3))
       result$beta$b[[i]] <- aperm(result$beta$b[[i]], perm = c(2,1,3))
-      tmp <- run_whittle(phi_fwd = result$beta$f[[i]],
-                         phi_bwd = result$beta$b[[i]],
-                         n_I = K)
-      ar_coef_sample[, , , i] <- tmp[[d]]$forward
     }
   }
 
+  ### transform PARCOR coefficients to TVVAR coefficients
+  phi_fwd <- result$beta$f
+  phi_bwd <- result$beta$b
+  sfInit(parallel = TRUE, cpus = cpus, type = "SOCK")
+  sfLibrary(PARCOR)
+  sfLibrary(mPARCORwNG)
+  sfExport("phi_fwd", "phi_bwd", "K", "d")
+  ar_coef_sample <- sfLapply(1:((niter-nburn)/nthin), function(i) obtain_TVAR(result$beta$f[[i]], result$beta$b[[i]], K, d))
+  sfStop()
   if(uncertainty){
     return(list(phi_fwd = result$beta$f,
                 phi_bwd = result$beta$b,
@@ -109,9 +110,11 @@ sPARCOR <- function(y,
     SIGMA <- apply(simplify2array(result$SIGMA$f), 1:3, mean)
 
     ### transfer PARCOR coefficients to AR coefficients
-    ar <- apply(ar_coef_sample, 1:3, mean)
+    ar <- apply(simplify2array(ar_coef_sample), 1:3, mean)
     return(list(phi_fwd = phi_fwd,
                 phi_bwd = phi_bwd,
+                phi_chol_fwd = beta_chol_fwd,
+                phi_chol_bwd = beta_chol_bwd,
                 SIGMA = SIGMA,
                 ar = ar))
   }
