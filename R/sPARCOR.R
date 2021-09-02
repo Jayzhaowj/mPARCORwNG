@@ -49,10 +49,10 @@ sPARCOR <- function(y,
                         display_progress = display_progress, ret_beta_nc = ret_beta_nc, ind = ind, skip = skip)
     for(i in 1:((niter - nburn)/nthin)){
       for(j in (1+1):(n_t-1)){
-        phi_fwd[j, ] <- rmvn(n = 1, mu = as.vector(result_skip$phi_fwd[, j, 1]),
-                             sigma = result_skip$Cnt_fwd[[1]][[j]])
-        phi_bwd[j, ] <- rmvn(n = 1, mu = as.vector(result_skip$phi_bwd[, j, 1]),
-                             sigma = result_skip$Cnt_bwd[[1]][[j]])
+        phi_fwd[j, ] <- tryCatch(rmvn(n = 1, mu = as.vector(result_skip$phi_fwd[, j, 1]),
+                             sigma = result_skip$Cnt_fwd[[1]][[j]]), error = function(e){as.vector(result_skip$phi_fwd[,j,1])})
+        phi_bwd[j, ] <- tryCatch(rmvn(n = 1, mu = as.vector(result_skip$phi_bwd[, j, 1]),
+                             sigma = result_skip$Cnt_bwd[[1]][[j]]), error = function(e){as.vector(result_skip$phi_bwd[,j,1])})
       }
       result$beta$f[[i]][, , 1] <- phi_fwd
       result$beta$b[[i]][, , 1] <- phi_bwd
