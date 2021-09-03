@@ -10,7 +10,8 @@
 using namespace Rcpp;
 
 // [[Rcpp::export]]
-List vi_shrinkTVP(arma::mat y,
+List vi_shrinkTVP(arma::mat y_fwd,
+                  arma::mat y_bwd,
                   int d,
                   double d1,
                   double d2,
@@ -23,15 +24,16 @@ List vi_shrinkTVP(arma::mat y,
                   int iter_max,
                   bool ind,
                   double S_0,
-                  double epsilon) {
+                  double epsilon,
+                  bool skip) {
 
   // Progress bar setup
   arma::vec prog_rep_points = arma::round(arma::linspace(0, iter_max, 50));
   Progress p(50, true);
 
   // Some necessary dimensions
-  int N = y.n_rows;
-  int n_I = y.n_cols;
+  int N = y_fwd.n_rows;
+  int n_I = y_fwd.n_cols;
   int n_I2 = std::pow(n_I, 2);
 
 
@@ -41,11 +43,18 @@ List vi_shrinkTVP(arma::mat y,
   int n_1;     // index
   int n_T;     // index
 
+  int start;
+  if(!skip){
+    start = 1;
+  }else{
+    start = 2;
+  }
+
   // generate forward and backward prediction error
   arma::cube yf(N, n_I, d+1, arma::fill::none);
   arma::cube yb(N, n_I, d+1, arma::fill::none);
-  yf.slice(0) = y;
-  yb.slice(0) = y;
+  yf.slice(start - 1) = y_fwd;
+  yb.slice(start - 1) = y_bwd;
 
   arma::vec y_tmp;
   arma::mat x_tmp;
@@ -369,7 +378,7 @@ List vi_shrinkTVP(arma::mat y,
   // Begin Gibbs loop
   while( !( diff < epsilon ) && (j < iter_max)){
     diff = 0.0;
-    for(int m = 1; m < d+1; m++){
+    for(int m = start; m < d+1; m++){
       for(int k = 0; k < n_I; k++){
         // Forward
         // ----------------------------
@@ -762,13 +771,13 @@ List vi_shrinkTVP(arma::mat y,
     // update forward kappa2 and lambda2
     for(int k = 0; k < n_I; k++){
       try {
-        xi2_tmp = arma::vectorise(xi2f_new.col(k));
+        xi2_tmp = arma::vectorise(xi2f_new(arma::span(0, n_I-1), arma::span(k, k), arma::span(start-1, d-1)));
         if(!ind){
           if(k == 1){
-            xi2_tmp = arma::join_cols(arma::vectorise(xi2f_new.col(k)), arma::vectorise(xi2f_chol_new.row(0)));
+            xi2_tmp = arma::join_cols(arma::vectorise(xi2f_new(arma::span(0, n_I-1), arma::span(k, k), arma::span(start-1, d-1))), arma::vectorise(xi2f_chol_new(0, arma::span(start-1, d-1))));
           }else if(k > 1){
             index = arma::sum(arma::linspace(1, k-1, k-1));
-            xi2_tmp = arma::join_cols(arma::vectorise(xi2f_new.col(k)), arma::vectorise(xi2f_chol_new.rows(index, index + k - 1)));
+            xi2_tmp = arma::join_cols(arma::vectorise(xi2f_new(arma::span(0, n_I-1), arma::span(k, k), arma::span(start-1, d-1))), arma::vectorise(xi2f_chol_new(arma::span(index, index+k-1), arma::span(start-1, d-1))));
           }
         }
         kappa2f_new(k) = update_global_shrink(xi2_tmp, a_xif_new(k), d1, d2);
@@ -783,13 +792,13 @@ List vi_shrinkTVP(arma::mat y,
     }
     for(int k = 0; k < n_I; k++){
       try {
-        tau2_tmp = arma::vectorise(tau2f_new.col(k));
+        tau2_tmp = arma::vectorise(tau2f_new(arma::span(0, n_I-1), arma::span(k, k), arma::span(start-1, d-1)));
         if(!ind){
           if(k == 1){
-            tau2_tmp = arma::join_cols(arma::vectorise(tau2f_new.col(k)), arma::vectorise(tau2f_chol_new.row(0)));
+            tau2_tmp = arma::join_cols(arma::vectorise(tau2f_new(arma::span(0, n_I-1), arma::span(k, k), arma::span(start-1, d-1))), arma::vectorise(tau2f_chol_new(0, arma::span(start-1, d-1))));
           }else if(k > 1){
             index = arma::sum(arma::linspace(1, k-1, k-1));
-            tau2_tmp = arma::join_cols(arma::vectorise(tau2f_new.col(k)), arma::vectorise(tau2f_chol_new.rows(index, index + k - 1)));
+            tau2_tmp = arma::join_cols(arma::vectorise(tau2f_new(arma::span(0, n_I-1), arma::span(k, k), arma::span(start-1, d-1))), arma::vectorise(tau2f_chol_new(arma::span(index, index+k-1), arma::span(start-1, d-1))));
           }
         }
         lambda2f_new(k) = update_global_shrink(tau2_tmp, a_tauf_new(k), e1, e2);
@@ -806,13 +815,13 @@ List vi_shrinkTVP(arma::mat y,
     // sample backward kappa2 and lambda2
     for(int k = 0; k < n_I; k++){
       try {
-        xi2_tmp = arma::vectorise(xi2b_new.col(k));
+        xi2_tmp = arma::vectorise(xi2b_new(arma::span(0, n_I-1), arma::span(k, k), arma::span(start-1, d-1)));
         if(!ind){
           if(k == 1){
-            xi2_tmp = arma::join_cols(arma::vectorise(xi2b_new.col(k)), arma::vectorise(xi2b_chol_new.row(0)));
+            xi2_tmp = arma::join_cols(arma::vectorise(xi2b_new(arma::span(0, n_I-1), arma::span(k, k), arma::span(start-1, d-1))), arma::vectorise(xi2b_chol_new(0, arma::span(start-1, d-1))));
           }else if(k > 1){
             index = arma::sum(arma::linspace(1, k-1, k-1));
-            xi2_tmp = arma::join_cols(arma::vectorise(xi2b_new.col(k)), arma::vectorise(xi2b_chol_new.rows(index, index + k - 1)));
+            xi2_tmp = arma::join_cols(arma::vectorise(xi2b_new(arma::span(0, n_I-1), arma::span(k, k), arma::span(start-1, d-1))), arma::vectorise(xi2b_chol_new(arma::span(index, index+k-1), arma::span(start-1, d-1))));
           }
         }
         kappa2b_new(k) = update_global_shrink(xi2_tmp, a_xib_new(k), d1, d2);
@@ -827,13 +836,13 @@ List vi_shrinkTVP(arma::mat y,
     }
     for(int k = 0; k < n_I; k++){
       try {
-        tau2_tmp = arma::vectorise(tau2b_new.col(k));
+        tau2_tmp = arma::vectorise(tau2b_new(arma::span(0, n_I-1), arma::span(k, k), arma::span(start-1, d-1)));
         if(!ind){
           if(k == 1){
-            tau2_tmp = arma::join_cols(arma::vectorise(tau2b_new.col(k)), arma::vectorise(tau2b_chol_new.row(0)));
+            tau2_tmp = arma::join_cols(arma::vectorise(tau2b_new(arma::span(0, n_I-1), arma::span(k, k), arma::span(start-1, d-1))), arma::vectorise(tau2b_chol_new(0, arma::span(start-1, d-1))));
           }else if(k > 1){
             index = arma::sum(arma::linspace(1, k-1, k-1));
-            tau2_tmp = arma::join_cols(arma::vectorise(tau2b_new.col(k)), arma::vectorise(tau2b_chol_new.rows(index, index + k - 1)));
+            tau2_tmp = arma::join_cols(arma::vectorise(tau2b_new(arma::span(0, n_I-1), arma::span(k, k), arma::span(start-1, d-1))), arma::vectorise(tau2b_chol_new(arma::span(index, index+k-1), arma::span(start-1, d-1))));
           }
         }
         lambda2b_new(k) = update_global_shrink(tau2_tmp, a_taub_new(k), e1, e2);
@@ -848,7 +857,7 @@ List vi_shrinkTVP(arma::mat y,
     }
 
     // Updating stop criterion
-    for(int m=0; m < d; m++){
+    for(int m=start-1; m < d; m++){
       if(!betaf_mean_new.slice(m).is_finite()){
         Rcout << "betaf_mean" << "\n";
       }
@@ -995,7 +1004,7 @@ List vi_shrinkTVP(arma::mat y,
     j += 1;
   }
 
-  for(int m = 0; m < d; m++){
+  for(int m = start-1; m < d; m++){
     for(int i = 0; i < N; i++){
       betaf.slice(m).row(i) = (betaf_nc_old.slice(m).row(i)) % arma::trans(arma::vectorise(thetaf_sr_old.slice(m))) + arma::trans(arma::vectorise(betaf_mean_old.slice(m)));
       betab.slice(m).row(i) = (betab_nc_old.slice(m).row(i)) % arma::trans(arma::vectorise(thetab_sr_old.slice(m))) + arma::trans(arma::vectorise(betab_mean_old.slice(m)));
