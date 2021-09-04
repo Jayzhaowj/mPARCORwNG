@@ -486,8 +486,8 @@ List vi_shrinkTVP(arma::mat y_fwd,
           }
 
         } catch(...){
-          beta_mean_tmp.fill(nanl(""));
-          beta2_mean_tmp.fill(nanl(""));
+          //beta_mean_tmp.fill(nanl(""));
+          //beta2_mean_tmp.fill(nanl(""));
           if (succesful == true){
             fail = "update forward beta mean & beta mean square";
             fail_iter = j + 1;
@@ -511,8 +511,8 @@ List vi_shrinkTVP(arma::mat y_fwd,
           }
           //thetaf_new.slice(m-1).col(k) = theta_tmp;
         } catch(...){
-          theta_sr_tmp.fill(nanl(""));
-          theta_tmp.fill(nanl(""));
+          //theta_sr_tmp.fill(nanl(""));
+          //theta_tmp.fill(nanl(""));
           if(succesful == true){
             fail = "update forward theta sr & theta";
             fail_iter = j + 1;
@@ -536,8 +536,8 @@ List vi_shrinkTVP(arma::mat y_fwd,
             }
           }
         } catch(...) {
-          tau2_tmp.fill(nanl(""));
-          tau2_inv_tmp.fill(nanl(""));
+          //tau2_tmp.fill(nanl(""));
+          //tau2_inv_tmp.fill(nanl(""));
           if (succesful == true){
             fail = "update forward tau2 & tau2_inv";
             fail_iter = j + 1;
@@ -561,7 +561,7 @@ List vi_shrinkTVP(arma::mat y_fwd,
             }
           }
         } catch(...) {
-          xi2_tmp.fill(nanl(""));
+          //xi2_tmp.fill(nanl(""));
           if (succesful == true){
             fail = "update forward xi2 & xi2_inv";
             fail_iter = j + 1;
@@ -648,7 +648,7 @@ List vi_shrinkTVP(arma::mat y_fwd,
           yb.slice(m).col(k).rows(n_1-1, n_T-1) = y_tmp;
           y_tmp = yb.slice(m-1).col(k).rows(n_1-1, n_T-1);
         } catch (...){
-          beta_nc_tmp.fill(nanl(""));
+          //beta_nc_tmp.fill(nanl(""));
           if (succesful == true){
             fail = "update backward beta_nc";
             fail_iter = j + 1;
@@ -670,7 +670,7 @@ List vi_shrinkTVP(arma::mat y_fwd,
             }
           }
         } catch(...){
-          beta_mean_tmp.fill(nanl(""));
+          //beta_mean_tmp.fill(nanl(""));
           //beta2_mean_tmp.fill(nanl(""));
           if (succesful == true){
             fail = "update backward beta mean & beta mean square";
@@ -694,8 +694,8 @@ List vi_shrinkTVP(arma::mat y_fwd,
             }
           }
         } catch(...){
-          theta_sr_tmp.fill(nanl(""));
-          theta_tmp.fill(nanl(""));
+          //theta_sr_tmp.fill(nanl(""));
+          //theta_tmp.fill(nanl(""));
           if(succesful == true){
             fail = "update backward theta sr & theta";
             fail_iter = j + 1;
@@ -705,7 +705,7 @@ List vi_shrinkTVP(arma::mat y_fwd,
         //
         // update backward tau2
         try {
-          update_local_shrink(tau2_tmp, tau2_inv_tmp, beta2_mean_tmp, lambda2f_old(k), a_tauf_old(k));
+          update_local_shrink(tau2_tmp, tau2_inv_tmp, beta2_mean_tmp, lambda2b_old(k), a_taub_old(k));
           tau2b_new.slice(m-1).col(k) = tau2_tmp(arma::span(0, n_I-1));
           tau2b_inv_new.slice(m-1).col(k) = tau2_inv_tmp(arma::span(0, n_I-1));
           if(!ind){
@@ -719,8 +719,8 @@ List vi_shrinkTVP(arma::mat y_fwd,
             }
           }
         } catch(...) {
-          tau2_tmp.fill(nanl(""));
-          tau2_inv_tmp.fill(nanl(""));
+          //tau2_tmp.fill(nanl(""));
+          //tau2_inv_tmp.fill(nanl(""));
           if (succesful == true){
             fail = "update backward tau2 & tau2_inv";
             fail_iter = j + 1;
@@ -730,7 +730,7 @@ List vi_shrinkTVP(arma::mat y_fwd,
 
         // update backward xi2
         try {
-          update_local_shrink(xi2_tmp, xi2_inv_tmp, theta_tmp, kappa2f_old(k), a_xif_old(k));
+          update_local_shrink(xi2_tmp, xi2_inv_tmp, theta_tmp, kappa2b_old(k), a_xib_old(k));
           xi2b_new.slice(m-1).col(k) = xi2_tmp(arma::span(0, n_I-1));
           xi2b_inv_new.slice(m-1).col(k) = xi2_inv_tmp(arma::span(0, n_I-1));
           if(!ind){
@@ -744,7 +744,7 @@ List vi_shrinkTVP(arma::mat y_fwd,
             }
           }
         } catch(...) {
-          xi2_tmp.fill(nanl(""));
+          //xi2_tmp.fill(nanl(""));
           if (succesful == true){
             fail = "update backward xi2 & xi2_inv";
             fail_iter = j + 1;
@@ -782,7 +782,7 @@ List vi_shrinkTVP(arma::mat y_fwd,
         }
         kappa2f_new(k) = update_global_shrink(xi2_tmp, a_xif_new(k), d1, d2);
       } catch (...) {
-        kappa2f_new(k) = arma::datum::nan;
+        //kappa2f_new(k) = arma::datum::nan;
         if (succesful == true){
           fail = "update forward kappa2";
           fail_iter = j + 1;
@@ -803,7 +803,7 @@ List vi_shrinkTVP(arma::mat y_fwd,
         }
         lambda2f_new(k) = update_global_shrink(tau2_tmp, a_tauf_new(k), e1, e2);
       } catch (...) {
-        lambda2f_new(k) = arma::datum::nan;
+        //lambda2f_new(k) = arma::datum::nan;
         if (succesful == true){
           fail = "update forward lambda2";
           fail_iter = j + 1;
@@ -826,7 +826,7 @@ List vi_shrinkTVP(arma::mat y_fwd,
         }
         kappa2b_new(k) = update_global_shrink(xi2_tmp, a_xib_new(k), d1, d2);
       } catch (...) {
-        kappa2b_new(k) = arma::datum::nan;
+        //kappa2b_new(k) = arma::datum::nan;
         if (succesful == true){
           fail = "update backward kappa2";
           fail_iter = j + 1;
@@ -847,7 +847,7 @@ List vi_shrinkTVP(arma::mat y_fwd,
         }
         lambda2b_new(k) = update_global_shrink(tau2_tmp, a_taub_new(k), e1, e2);
       } catch (...) {
-        lambda2b_new(k) = arma::datum::nan;
+        //lambda2b_new(k) = arma::datum::nan;
         if (succesful == true){
           fail = "update backward lambda2";
           fail_iter = j + 1;
