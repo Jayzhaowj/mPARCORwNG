@@ -52,12 +52,17 @@ void update_beta_tilde(arma::mat& beta_nc,
     Rt.slice(t) = Ct.slice(t-1) + I_d;
     ft(t-1) = arma::as_scalar(Ft.row(t-1)*mt.col(t-1));
     Qt = arma::as_scalar(Ft.row(t-1)*Rt.slice(t)*arma::trans(Ft.row(t-1)) + St_tmp(t-1));
-    St_sq = std::sqrt(St_tmp(t-1));
 
+    St_sq = std::sqrt(St_tmp(t-1));
     Qt_inv_sq = std::sqrt(1.0/Qt);
     et = yt_star(t-1) - ft(t-1);
     S_comp += St_sq * Qt_inv_sq * et * et * Qt_inv_sq * St_sq;
     St_tmp(t) = (n_0*S_0 + S_comp)/(n_0 + t);
+    if(St_tmp(t) < 0){
+      Rcout << "n_0*S_0: " << n_0*S_0 << "\n";
+      Rcout << "S_comp: " << S_comp << "\n";
+      Rcout << "St_tmp: " << St_tmp(t) << "\n";
+    }
     At = Rt.slice(t)*arma::trans(Ft.row(t-1))/Qt;
     mt.col(t) = mt.col(t-1) + At*et;
     Ct.slice(t) = Rt.slice(t) - At*Qt*arma::trans(At);
