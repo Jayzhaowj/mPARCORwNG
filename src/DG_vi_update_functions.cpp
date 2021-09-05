@@ -25,10 +25,9 @@ void update_local_shrink(arma::vec& local_shrink,
   for (int j = 0; j < d; j++){
     double p3 = param_vec2(j);
     double part1 = std::sqrt(p2 * p3);
+    Rcout << "part 1:" << part1 << "\n";
+    Rcout << "p1: " << p1 << "\n";
     if(abs(part1) < 1){
-      Rcout << "part 1:" << part1 << "\n";
-      Rcout << "p1: " << p1 << "\n";
-
       term1 = 2*p1/p3;
       term2 = std::log(R::bessel_k(p1 + 1, part1, true)) - (p1+1);
       term3 = std::log(R::bessel_k(p1, part1, true)) - p1;
