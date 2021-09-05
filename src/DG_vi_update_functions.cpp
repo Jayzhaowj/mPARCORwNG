@@ -3,11 +3,12 @@
 #include <cmath>
 #include "unur_bessel_k_nuasympt.h"
 #include <boost/math/special_functions/bessel.hpp>
+#include "sample_parameters.h"
 using namespace Rcpp;
 
 // [[Rcpp::depends(RcppArmadillo)]]
 // [[Rcpp::depends(BH)]]
-// [[Rcpp::export]]
+
 void update_local_shrink(arma::vec& local_shrink,
                          arma::vec& local_shrink_inv,
                          const arma::vec& param_vec2,
@@ -33,8 +34,8 @@ void update_local_shrink(arma::vec& local_shrink,
 
   }
 
-  //std::for_each(local_shrink.begin(), local_shrink.end(), res_protector);
-  //std::for_each(local_shrink_inv.begin(), local_shrink_inv,end(), res_protector);
+  std::for_each(local_shrink.begin(), local_shrink.end(), res_protector);
+  std::for_each(local_shrink_inv.begin(), local_shrink_inv.end(), res_protector);
 }
 
 

@@ -11,20 +11,6 @@ Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
 Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
-// update_local_shrink
-void update_local_shrink(arma::vec& local_shrink, arma::vec& local_shrink_inv, const arma::vec& param_vec2, double global_shrink, double a);
-RcppExport SEXP _mPARCORwNG_update_local_shrink(SEXP local_shrinkSEXP, SEXP local_shrink_invSEXP, SEXP param_vec2SEXP, SEXP global_shrinkSEXP, SEXP aSEXP) {
-BEGIN_RCPP
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< arma::vec& >::type local_shrink(local_shrinkSEXP);
-    Rcpp::traits::input_parameter< arma::vec& >::type local_shrink_inv(local_shrink_invSEXP);
-    Rcpp::traits::input_parameter< const arma::vec& >::type param_vec2(param_vec2SEXP);
-    Rcpp::traits::input_parameter< double >::type global_shrink(global_shrinkSEXP);
-    Rcpp::traits::input_parameter< double >::type a(aSEXP);
-    update_local_shrink(local_shrink, local_shrink_inv, param_vec2, global_shrink, a);
-    return R_NilValue;
-END_RCPP
-}
 // pred_dens_mix_approx
 arma::vec pred_dens_mix_approx(arma::vec x_test, arma::vec y_test, arma::mat theta_sr, arma::mat beta_mean, arma::vec sig2_samp, bool sv, arma::vec sv_phi, arma::vec sv_mu, arma::vec sv_sigma2, arma::cube chol_C_N_inv_samp, arma::cube m_N_samp, int M, bool log);
 RcppExport SEXP _mPARCORwNG_pred_dens_mix_approx(SEXP x_testSEXP, SEXP y_testSEXP, SEXP theta_srSEXP, SEXP beta_meanSEXP, SEXP sig2_sampSEXP, SEXP svSEXP, SEXP sv_phiSEXP, SEXP sv_muSEXP, SEXP sv_sigma2SEXP, SEXP chol_C_N_inv_sampSEXP, SEXP m_N_sampSEXP, SEXP MSEXP, SEXP logSEXP) {
@@ -119,7 +105,6 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_mPARCORwNG_update_local_shrink", (DL_FUNC) &_mPARCORwNG_update_local_shrink, 5},
     {"_mPARCORwNG_pred_dens_mix_approx", (DL_FUNC) &_mPARCORwNG_pred_dens_mix_approx, 13},
     {"_mPARCORwNG_do_shrinkTVP", (DL_FUNC) &_mPARCORwNG_do_shrinkTVP, 33},
     {"_mPARCORwNG_vi_shrinkTVP", (DL_FUNC) &_mPARCORwNG_vi_shrinkTVP, 16},

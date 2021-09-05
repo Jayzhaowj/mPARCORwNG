@@ -10,6 +10,15 @@ void res_protector(double& x){
     double sign = std::copysign(1, x);
     x = DBL_MIN * std::pow(10, 10) * sign;
   }
+
+  if (std::abs(x) > DBL_MAX * std::pow(10, -30)){
+    double sign = std::copysign(1, x);
+    x = DBL_MAX * std::pow(10, -30) * sign;
+  }
+
+  if (std::isnan(x)){
+    throw 1;
+  }
 }
 
 
