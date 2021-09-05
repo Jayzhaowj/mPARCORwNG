@@ -4,6 +4,7 @@
 #include "unur_bessel_k_nuasympt.h"
 #include <boost/math/special_functions/bessel.hpp>
 #include "sample_parameters.h"
+#include <iostream>
 using namespace Rcpp;
 
 // [[Rcpp::depends(RcppArmadillo)]]
@@ -22,15 +23,18 @@ void update_local_shrink(arma::vec& local_shrink,
   for (int j = 0; j < d; j++){
     double p3 = param_vec2(j);
     double part1 = std::sqrt(p2 * p3);
-    //if(part1 < 50){
-    local_shrink(j) = boost::math::cyl_bessel_k(p1+1, part1)*std::sqrt(p3)/(boost::math::cyl_bessel_k(p1, part1) * std::sqrt(p2));
-    local_shrink_inv(j) = std::sqrt(p2)*boost::math::cyl_bessel_k(p1+1, part1)/(std::sqrt(p3)*boost::math::cyl_bessel_k(p1, part1)) - 2*p1/p3;
-    //local_shrink(j) = R::bessel_k(p1+1, part1, true)*std::sqrt(p3)/(R::bessel_k(p1, part1, true) * std::sqrt(p2));
-    //local_shrink_inv(j) = std::sqrt(p2)*R::bessel_k(p1+1, part1, true)/(std::sqrt(p3)*R::bessel_k(p1, part1, true)) - 2*p1/p3;
-    //}else{
+    if(part1 < 1){
+
+    //local_shrink(j) = std::cyl_bessel_k(p1+1, part1)*std::sqrt(p3)/(std::cyl_bessel_k(p1, part1) * std::sqrt(p2));
+    //local_shrink_inv(j) = std::sqrt(p2)*std::cyl_bessel_k(p1+1, part1)/(std::sqrt(p3)*std::cyl_bessel_k(p1, part1)) - 2*p1/p3;
+      local_shrink(j) = R::bessel_k(p1+1, part1, true)*std::sqrt(p3)/(R::bessel_k(p1, part1, true) * std::sqrt(p2));
+      local_shrink_inv(j) = std::sqrt(p2)*R::bessel_k(p1+1, part1, true)/(std::sqrt(p3)*R::bessel_k(p1, part1, true)) - 2*p1/p3;
+    }else{
+      local_shrink(j) = boost::math::cyl_bessel_k(p1+1, part1)*std::sqrt(p3)/(boost::math::cyl_bessel_k(p1, part1) * std::sqrt(p2));
+      local_shrink_inv(j) = std::sqrt(p2)*boost::math::cyl_bessel_k(p1+1, part1)/(std::sqrt(p3)*boost::math::cyl_bessel_k(p1, part1)) - 2*p1/p3;
     //  local_shrink(j) = unur_bessel_k_nuasympt(p1+1, part1, false, false)*std::sqrt(p3)/(unur_bessel_k_nuasympt(p1, part1, false, false) * std::sqrt(p2));
     //  local_shrink_inv(j) = std::sqrt(p2)*unur_bessel_k_nuasympt(p1+1, part1, false, false)/(std::sqrt(p3)*unur_bessel_k_nuasympt(p1, part1, false, false)) - 2*p1/p3;
-    //}
+    }
 
   }
 
