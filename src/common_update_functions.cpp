@@ -26,6 +26,8 @@ void update_beta_mean(arma::vec& beta_mean,
     Rcout << "beta mean sigma2: " << i << " index: " << arma::as_scalar(sigma2_beta_mean(i)) << "\n";
     Rcout << "tau2_inv: " << tau2_inv(i) << "\n";
     Rcout << "tmp: " << arma::sum(sigma2_inv%arma::square(x.col(i))) << "\n";
+    Rcout << "sigma2_inv: " << arma::sum(sigma2_inv) << "\n";
+    Rcout << "x_square: " << arma::sum(arma::square(x.col(i))) << "\n";
   }
   //std::for_each(beta_mean.begin(), beta_mean.end(), res_protector);
   //std::for_each(beta2_mean.begin(), beta2_mean.end(), res_protector);
