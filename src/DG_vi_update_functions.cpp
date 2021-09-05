@@ -25,6 +25,7 @@ void update_local_shrink(arma::vec& local_shrink,
     double part1 = std::sqrt(p2 * p3);
     if(abs(part1) < 1){
       Rcout << "part 1:" << part1 << "\n";
+      Rcout << "p1: " << p1 << "\n";
     //local_shrink(j) = std::cyl_bessel_k(p1+1, part1)*std::sqrt(p3)/(std::cyl_bessel_k(p1, part1) * std::sqrt(p2));
     //local_shrink_inv(j) = std::sqrt(p2)*std::cyl_bessel_k(p1+1, part1)/(std::sqrt(p3)*std::cyl_bessel_k(p1, part1)) - 2*p1/p3;
       local_shrink(j) = R::bessel_k(p1+1, part1, true)*std::sqrt(p3)/(R::bessel_k(p1, part1, true) * std::sqrt(p2));
