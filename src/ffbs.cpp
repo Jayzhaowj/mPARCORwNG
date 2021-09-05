@@ -32,7 +32,10 @@ void update_beta_tilde(arma::mat& beta_nc,
   arma::mat theta_sr_diag = arma::diagmat(theta_sr);
   arma::vec yt_star = y - x*beta_mean;
   arma::mat Ft = x*theta_sr_diag;
-
+  if(Ft.has_nan()){
+    Rcout << "Ft has nan!" << "\n";
+    Rcout << "theta_sr_diag: " << theta_sr_diag.has_nan() << "\n";
+  }
 
   arma::mat I_d = arma::eye(d, d);
   arma::vec ft(N, arma::fill::zeros);
@@ -50,6 +53,7 @@ void update_beta_tilde(arma::mat& beta_nc,
   for(int t = 1; t < N+1; t++){
 
     Rt.slice(t) = Ct.slice(t-1) + I_d;
+    Rt.slice(t) = 0.5*Rt.slice(t) + 0.5*arma::trans(Rt.slice(t));
     ft(t-1) = arma::as_scalar(Ft.row(t-1)*mt.col(t-1));
     Qt = arma::as_scalar(Ft.row(t-1)*Rt.slice(t)*arma::trans(Ft.row(t-1)) + St_tmp(t-1));
 
@@ -59,18 +63,20 @@ void update_beta_tilde(arma::mat& beta_nc,
     S_comp += St_sq * Qt_inv_sq * et * et * Qt_inv_sq * St_sq;
     St_tmp(t) = (n_0*S_0 + S_comp)/(n_0 + t);
     if(std::isnan(St_tmp(t))){
+      Rcout << "t: " << t << "\n";
       Rcout << "n_0*S_0: " << n_0*S_0 << "\n";
       Rcout << "S_comp: " << S_comp << "\n";
       Rcout << "St_tmp: " << St_tmp(t) << "\n";
       Rcout << "Qt_inv_sq: " << Qt_inv_sq << "\n";
       Rcout << "Qt: " << Qt << "\n";
       Rcout << "rest: " << arma::as_scalar(Ft.row(t-1)*Rt.slice(t)*arma::trans(Ft.row(t-1))) << "\n";
+      Rcout << "Rt: " << (Rt.slice(t)).has_nan() << "\n";
       break;
     }
     At = Rt.slice(t)*arma::trans(Ft.row(t-1))/Qt;
     mt.col(t) = mt.col(t-1) + At*et;
     Ct.slice(t) = Rt.slice(t) - At*Qt*arma::trans(At);
-    //Ct.slice(t) = 0.5*Ct.slice(t) + 0.5*arma::trans(Ct.slice(t));
+    Ct.slice(t) = 0.5*Ct.slice(t) + 0.5*arma::trans(Ct.slice(t));
   }
   St = St_tmp.rows(1, N);
   beta_nc.row(N) = arma::trans(mt.col(N));
