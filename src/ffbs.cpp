@@ -96,7 +96,7 @@ void update_beta_tilde(arma::mat& beta_nc,
       y(t-1) = arma::as_scalar(yt_star(t-1) - Ft.row(t-1)*arma::trans(beta_nc.row(t)));
     }
   }
-  std::for_each(beta_nc.begin(), beta_nc.end(), res_protector);
-  std::for_each(beta2_nc.begin(), beta2_nc.end(), res_protector);
-  std::for_each(beta_nc_cov.begin(), beta_nc_cov.end(), res_protector);
+  //std::for_each(beta_nc.begin(), beta_nc.end(), res_protector);
+  //std::for_each(beta2_nc.begin(), beta2_nc.end(), res_protector);
+  //std::for_each(beta_nc_cov.begin(), beta_nc_cov.end(), res_protector);
 }
