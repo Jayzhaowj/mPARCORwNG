@@ -19,24 +19,28 @@ void update_local_shrink(arma::vec& local_shrink,
 
   double p1 = a - 0.5;
   double p2 = a * global_shrink;
-
+  double term1;
+  double term2;
+  double term3;
   for (int j = 0; j < d; j++){
     double p3 = param_vec2(j);
     double part1 = std::sqrt(p2 * p3);
-    if(abs(part1) < 1){
-      Rcout << "part 1:" << part1 << "\n";
-      Rcout << "p1: " << p1 << "\n";
+    //if(abs(part1) < 1){
+    //  Rcout << "part 1:" << part1 << "\n";
+    //  Rcout << "p1: " << p1 << "\n";
     //local_shrink(j) = std::cyl_bessel_k(p1+1, part1)*std::sqrt(p3)/(std::cyl_bessel_k(p1, part1) * std::sqrt(p2));
     //local_shrink_inv(j) = std::sqrt(p2)*std::cyl_bessel_k(p1+1, part1)/(std::sqrt(p3)*std::cyl_bessel_k(p1, part1)) - 2*p1/p3;
-      local_shrink(j) = R::bessel_k(p1+1, part1, true)*std::sqrt(p3)/(R::bessel_k(p1, part1, true) * std::sqrt(p2));
-      local_shrink_inv(j) = std::sqrt(p2)*R::bessel_k(p1+1, part1, true)/(std::sqrt(p3)*R::bessel_k(p1, part1, true)) - 2*p1/p3;
-    }else{
-
-      local_shrink(j) = boost::math::cyl_bessel_k(p1+1, part1)*std::sqrt(p3)/(boost::math::cyl_bessel_k(p1, part1) * std::sqrt(p2));
-      local_shrink_inv(j) = std::sqrt(p2)*boost::math::cyl_bessel_k(p1+1, part1)/(std::sqrt(p3)*boost::math::cyl_bessel_k(p1, part1)) - 2*p1/p3;
+    //  local_shrink(j) = besselK(p1+1, part1)*std::sqrt(p3)/(R::bessel_k(p1, part1, true) * std::sqrt(p2));
+    //  local_shrink_inv(j) = std::sqrt(p2)*R::bessel_k(p1+1, part1, true)/(std::sqrt(p3)*R::bessel_k(p1, part1, true)) - 2*p1/p3;
+    //}else{
+    term1 = 2*p1/p3;
+    term2 = std::log(R::bessel_k(p1 + 1, part1, true)) - (p1+1);
+    term3 = std::log(R::bessel_k(p1, part1, true)) - p1;
+    local_shrink(j) = std::exp(0.5 * std::log(p3) + term2 - term3 - 0.5 * std::log(p2));
+    local_shrink_inv(j) = std::exp(0.5*std::log(p2) + term2 - term3 - 0.5 * std::log(p3)) - term1;
     //  local_shrink(j) = unur_bessel_k_nuasympt(p1+1, part1, false, false)*std::sqrt(p3)/(unur_bessel_k_nuasympt(p1, part1, false, false) * std::sqrt(p2));
     //  local_shrink_inv(j) = std::sqrt(p2)*unur_bessel_k_nuasympt(p1+1, part1, false, false)/(std::sqrt(p3)*unur_bessel_k_nuasympt(p1, part1, false, false)) - 2*p1/p3;
-    }
+    //}
 
   }
 
