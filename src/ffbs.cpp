@@ -58,10 +58,11 @@ void update_beta_tilde(arma::mat& beta_nc,
     et = yt_star(t-1) - ft(t-1);
     S_comp += St_sq * Qt_inv_sq * et * et * Qt_inv_sq * St_sq;
     St_tmp(t) = (n_0*S_0 + S_comp)/(n_0 + t);
-    if(St_tmp(t) < 0){
+    if(std::isnan(St_tmp(t))){
       Rcout << "n_0*S_0: " << n_0*S_0 << "\n";
       Rcout << "S_comp: " << S_comp << "\n";
       Rcout << "St_tmp: " << St_tmp(t) << "\n";
+      Rcout << "Qt_inv_sq: " << Qt_inv_sq << "\n";
     }
     At = Rt.slice(t)*arma::trans(Ft.row(t-1))/Qt;
     mt.col(t) = mt.col(t-1) + At*et;
