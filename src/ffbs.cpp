@@ -71,6 +71,9 @@ void update_beta_tilde(arma::mat& beta_nc,
       Rcout << "Qt: " << Qt << "\n";
       Rcout << "rest: " << arma::as_scalar(Ft.row(t-1)*Rt.slice(t)*arma::trans(Ft.row(t-1))) << "\n";
       Rcout << "Rt: " << (Rt.slice(t)).has_nan() << "\n";
+      Rcout << "Rtm1: " << (Rt.slice(t-1)).has_nan() << "\n";
+      Rcout << "Atm1: " << At.has_nan() << "\n";
+      Rcout << "Ctm1: " << (Ct.slice(t-1)).has_nan() << "\n";
       break;
     }
     At = Rt.slice(t)*arma::trans(Ft.row(t-1))/Qt;
