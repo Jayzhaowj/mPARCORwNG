@@ -463,7 +463,7 @@ List vi_shrinkTVP(arma::mat y_fwd,
           yf.slice(m).col(k).rows(n_1-1, n_T-1) = y_tmp;
           y_tmp = yf.slice(m-1).col(k).rows(n_1-1, n_T-1);
         } catch (...){
-          beta_nc_tmp.fill(arma::datum::nan);
+          //beta_nc_tmp.fill(arma::datum::nan);
           if (succesful == true){
             fail = "update forward beta_nc";
             fail_iter = j + 1;
