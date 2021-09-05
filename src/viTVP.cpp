@@ -521,7 +521,7 @@ List vi_shrinkTVP(arma::mat y_fwd,
         }
 
         // update forward tau2
-        Rcout << "forward tau2" << "\n";
+        //Rcout << "forward tau2" << "\n";
         try {
           update_local_shrink(tau2_tmp, tau2_inv_tmp, beta2_mean_tmp, lambda2f_old(k), a_tauf_old(k));
           tau2f_new.slice(m-1).col(k) = tau2_tmp(arma::span(0, n_I-1));
@@ -547,7 +547,7 @@ List vi_shrinkTVP(arma::mat y_fwd,
         }
 
         // update forward xi2
-        Rcout << "forward xi" << "\n";
+        //Rcout << "forward xi" << "\n";
         try {
           update_local_shrink(xi2_tmp, xi2_inv_tmp, theta_tmp, kappa2f_old(k), a_xif_old(k));
           xi2f_new.slice(m-1).col(k) = xi2_tmp(arma::span(0, n_I-1));
@@ -706,7 +706,7 @@ List vi_shrinkTVP(arma::mat y_fwd,
         }
         //
         // update backward tau2
-        Rcout << "backward tau2" << "\n";
+        //Rcout << "backward tau2" << "\n";
         try {
           update_local_shrink(tau2_tmp, tau2_inv_tmp, beta2_mean_tmp, lambda2b_old(k), a_taub_old(k));
           tau2b_new.slice(m-1).col(k) = tau2_tmp(arma::span(0, n_I-1));
@@ -732,7 +732,7 @@ List vi_shrinkTVP(arma::mat y_fwd,
         }
 
         // update backward xi2
-        Rcout << "backward xi" << "\n";
+        //Rcout << "backward xi" << "\n";
         try {
           update_local_shrink(xi2_tmp, xi2_inv_tmp, theta_tmp, kappa2b_old(k), a_xib_old(k));
           xi2b_new.slice(m-1).col(k) = xi2_tmp(arma::span(0, n_I-1));
