@@ -63,6 +63,9 @@ void update_beta_tilde(arma::mat& beta_nc,
       Rcout << "S_comp: " << S_comp << "\n";
       Rcout << "St_tmp: " << St_tmp(t) << "\n";
       Rcout << "Qt_inv_sq: " << Qt_inv_sq << "\n";
+      Rcout << "Qt: " << Qt << "\n";
+      Rcout << "rest: " << arma::as_scalar(Ft.row(t-1)*Rt.slice(t)*arma::trans(Ft.row(t-1))) << "\n";
+      break;
     }
     At = Rt.slice(t)*arma::trans(Ft.row(t-1))/Qt;
     mt.col(t) = mt.col(t-1) + At*et;
