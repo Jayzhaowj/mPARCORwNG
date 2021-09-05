@@ -1,5 +1,6 @@
 #include <RcppArmadillo.h>
 #include <math.h>
+#include "sample_parameters.h"
 using namespace Rcpp;
 
 // [[Rcpp::depends(RcppArmadillo)]]
@@ -23,6 +24,8 @@ void update_beta_mean(arma::vec& beta_mean,
     beta_mean(i) = arma::as_scalar(sigma2_beta_mean(i) * (arma::sum(sigma2_inv % (tmp % x.col(i)))));
     beta2_mean(i) = arma::as_scalar(sigma2_beta_mean(i)) + arma::as_scalar(beta_mean(i)*beta_mean(i));
   }
+  std::for_each(beta_mean.begin(), beta_mean.end(), res_protector);
+  std::for_each(beta2_mean.begin(), beta2_mean.end(), res_protector);
 }
 
 
@@ -51,5 +54,7 @@ void update_theta_sr(arma::vec& beta_mean,
     theta_sr(i) = arma::as_scalar(sigma2_theta_sr_mean(i) * (arma::sum(sigma2_inv % (tmp % x.col(i)))));
     theta(i) = arma::as_scalar(sigma2_theta_sr_mean(i)) + arma::as_scalar(theta_sr(i)*theta_sr(i));
   }
+  std::for_each(theta_sr.begin(), theta_sr.end(), res_protector);
+  std::for_each(theta.begin(), theta.end(), res_protector);
 }
 

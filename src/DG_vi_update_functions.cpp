@@ -48,6 +48,6 @@ double update_global_shrink(const arma::vec& prior_var,
   double hyper1_full = hyper1 + a*d;
   double hyper2_full = hyper2 + arma::mean(prior_var) * a * d * 0.5;
   double global_shrink = hyper1_full/hyper2_full;
-
+  res_protector(global_shrink);
   return global_shrink;
 }
