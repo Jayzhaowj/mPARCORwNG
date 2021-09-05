@@ -100,6 +100,7 @@ void update_beta_tilde(arma::mat& beta_nc,
   for(int t = 0; t < N; t++){
     if(std::isnan(1/St(t))){
       Rcout << "St" << t <<": " << St(t) << "\n";
+      break;
     }
   }
   //std::for_each(beta_nc.begin(), beta_nc.end(), res_protector);
