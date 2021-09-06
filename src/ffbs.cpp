@@ -125,6 +125,8 @@ void update_beta_tilde(arma::mat& beta_nc,
     }
   }
 
+  //std::for_each(y.begin(), y.end(), res_protector);
+
   for(int t = 0; t < N; t++){
     if(std::isnan(1/St(t))){
       Rcout << "St" << t <<": " << St(t) << "\n";
