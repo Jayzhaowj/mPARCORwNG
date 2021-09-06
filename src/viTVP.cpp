@@ -637,7 +637,7 @@ List vi_shrinkTVP(arma::mat y_fwd,
         try {
           update_beta_tilde(beta_nc_tmp, beta2_nc_tmp, beta_cov_nc_tmp,
                             y_tmp, x_tmp, theta_sr_tmp, beta_mean_tmp, N_m, S_0, sigma2_tmp);
-          (betab_nc_new.slice(m-1)).rows(n_1-1, n_T-1).cols(k*n_I, (k+1)*n_I-1) = beta_nc_tmp.cols(0, n_I-1).rows(1, N_m);
+          betab_nc_new.slice(m-1).rows(n_1-1, n_T-1).cols(k*n_I, (k+1)*n_I-1) = beta_nc_tmp.cols(0, n_I-1).rows(1, N_m);
           if(!ind){
             if(k == 1){
               betab_nc_chol_new.slice(m-1).rows(n_1-1, n_T-1).col(0) = beta_nc_tmp.col(n_I).rows(1, N_m);
@@ -760,9 +760,11 @@ List vi_shrinkTVP(arma::mat y_fwd,
 
       // transform back
       if(!ind){
-        for(int i = 0; i < N; i++){
-          // forward part
-          betaf_chol.slice(m-1).row(i) = (betaf_nc_chol_old.slice(m-1).row(i)) % arma::trans(thetaf_sr_chol_old.col(m-1)) + arma::trans(betaf_mean_chol_old.col(m-1));
+        // forward part
+        n_1 = m + 1;
+        n_T = N;
+        for(int i = n_1-1; i < n_T; i++){
+          betaf_chol.slice(m-1).row(i) = (betaf_nc_chol_new.slice(m-1).row(i)) % arma::trans(thetaf_sr_chol_new.col(m-1)) + arma::trans(betaf_mean_chol_new.col(m-1));
           tmp_lower_triangular.elem(lower_indices) = betaf_chol.slice(m-1).row(i);
           yf.slice(m).row(i) = arma::trans(arma::inv(tmp_lower_triangular)*arma::trans(yf.slice(m).row(i)));
           if(arma::any(arma::abs(yf.slice(m).row(i)) > std::pow(10, 10))){
@@ -771,8 +773,12 @@ List vi_shrinkTVP(arma::mat y_fwd,
             Rcout << "lower_triangular: " << arma::inv(tmp_lower_triangular) << std::endl << "\n";
             break;
           }
-          // backward part
-          betab_chol.slice(m-1).row(i) = (betab_nc_chol_old.slice(m-1).row(i)) % arma::trans(thetab_sr_chol_old.col(m-1)) + arma::trans(betab_mean_chol_old.col(m-1));
+        }
+        //backward part
+        n_1 = 1;          // backward index
+        n_T = N - m;      // backward index
+        for(int i = n_1-1; i < n_T; i++){
+          betab_chol.slice(m-1).row(i) = (betab_nc_chol_new.slice(m-1).row(i)) % arma::trans(thetab_sr_chol_new.col(m-1)) + arma::trans(betab_mean_chol_new.col(m-1));
           tmp_lower_triangular.elem(lower_indices) = betab_chol.slice(m-1).row(i);
           yb.slice(m).row(i) = arma::trans(arma::inv(tmp_lower_triangular)*arma::trans(yb.slice(m).row(i)));
           if(arma::any(arma::abs(yb.slice(m).row(i)) > std::pow(10, 10))){
@@ -1029,8 +1035,8 @@ List vi_shrinkTVP(arma::mat y_fwd,
 
   for(int m = start-1; m < d; m++){
     for(int i = 0; i < N; i++){
-      betaf.slice(m).row(i) = (betaf_nc_old.slice(m).row(i)) % arma::trans(arma::vectorise(thetaf_sr_old.slice(m))) + arma::trans(arma::vectorise(betaf_mean_old.slice(m)));
-      betab.slice(m).row(i) = (betab_nc_old.slice(m).row(i)) % arma::trans(arma::vectorise(thetab_sr_old.slice(m))) + arma::trans(arma::vectorise(betab_mean_old.slice(m)));
+      betaf.slice(m).row(i) = (betaf_nc_new.slice(m).row(i)) % arma::trans(arma::vectorise(thetaf_sr_new.slice(m))) + arma::trans(arma::vectorise(betaf_mean_new.slice(m)));
+      betab.slice(m).row(i) = (betab_nc_new.slice(m).row(i)) % arma::trans(arma::vectorise(thetab_sr_new.slice(m))) + arma::trans(arma::vectorise(betab_mean_new.slice(m)));
       if(!ind){
         // forward part
         tmp_beta.elem(all_indices) = betaf.slice(m).row(i);
