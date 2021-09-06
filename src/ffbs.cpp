@@ -122,6 +122,12 @@ void update_beta_tilde(arma::mat& beta_nc,
     //beta_nc_samp.col(t) = mT.col(t);
     if(t > 0){
       y(t-1) = arma::as_scalar(yt_star(t-1) - Ft.row(t-1)*arma::trans(beta_nc.row(t)));
+      if(std::abs(y(t-1)) > std::pow(10, 10)){
+        Rcout << "inner t:" << t << "\n";
+        Rcout << "Ft row: " << Ft.row(t-1) << "\n";
+        Rcout << "beta_nc: " << beta_nc.row(t) << "\n";
+        break;
+      }
     }
   }
 

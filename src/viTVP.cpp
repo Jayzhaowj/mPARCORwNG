@@ -765,11 +765,22 @@ List vi_shrinkTVP(arma::mat y_fwd,
           betaf_chol.slice(m-1).row(i) = (betaf_nc_chol_old.slice(m-1).row(i)) % arma::trans(thetaf_sr_chol_old.col(m-1)) + arma::trans(betaf_mean_chol_old.col(m-1));
           tmp_lower_triangular.elem(lower_indices) = betaf_chol.slice(m-1).row(i);
           yf.slice(m).row(i) = arma::trans(arma::inv(tmp_lower_triangular)*arma::trans(yf.slice(m).row(i)));
-
+          if(any(std::abs(yf.slice(m).row(i)) > std::pow(10, 10))){
+            Rcout << "iteration: " << i << "\n";
+            Rcout << "yf: " << yf.slice(m).row(i) << std::endl << "\n";
+            Rcout << "lower_triangular: " << arma::inv(tmp_lower_triangular) << std::endl << "\n";
+            break;
+          }
           // backward part
           betab_chol.slice(m-1).row(i) = (betab_nc_chol_old.slice(m-1).row(i)) % arma::trans(thetab_sr_chol_old.col(m-1)) + arma::trans(betab_mean_chol_old.col(m-1));
           tmp_lower_triangular.elem(lower_indices) = betab_chol.slice(m-1).row(i);
           yb.slice(m).row(i) = arma::trans(arma::inv(tmp_lower_triangular)*arma::trans(yb.slice(m).row(i)));
+          if(any(std::abs(yb.slice(m).row(i)) > std::pow(10, 10))){
+            Rcout << "iteration: " << i << "\n";
+            Rcout << "yb: " << yb.slice(m).row(i) << std::endl << "\n";
+            Rcout << "lower_triangular: " << arma::inv(tmp_lower_triangular) << std::endl << "\n";
+            break;
+          }
         }
       }
     }
