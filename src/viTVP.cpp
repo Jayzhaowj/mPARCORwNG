@@ -442,7 +442,7 @@ List vi_shrinkTVP(arma::mat y_fwd,
             xi2_inv_tmp = arma::join_cols(xi2_inv_tmp, xi2f_inv_chol_old.col(m-1).rows(index, index+k-1));
           }
         }
-
+        Rcout << "current stage: " << m << "\n";
         try {
           update_beta_tilde(beta_nc_tmp, beta2_nc_tmp, beta_cov_nc_tmp,
                             y_tmp, x_tmp, theta_sr_tmp, beta_mean_tmp, N_m, S_0, sigma2_tmp);
