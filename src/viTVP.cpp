@@ -778,6 +778,9 @@ List vi_shrinkTVP(arma::mat y_fwd,
           if(arma::any(arma::abs(yb.slice(m).row(i)) > std::pow(10, 10))){
             Rcout << "iteration: " << i << "\n";
             Rcout << "yb: " << yb.slice(m).row(i) << std::endl << "\n";
+            Rcout << "betab_nc_chol: " << (betab_nc_chol_old.slice(m-1).row(i)) << "\n";
+            Rcout << "thetab_sr_chol: " << arma::trans(thetab_sr_chol_old.col(m-1)) << "\n";
+            Rcout << "betab_mean_chol: " << arma::trans(betab_mean_chol_old.col(m-1)) << "\n";
             Rcout << "lower_triangular: " << arma::inv(tmp_lower_triangular) << std::endl << "\n";
             break;
           }
