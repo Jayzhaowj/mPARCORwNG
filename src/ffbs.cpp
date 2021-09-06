@@ -84,8 +84,11 @@ void update_beta_tilde(arma::mat& beta_nc,
       Rcout << "t: " << t << "\n";
       Rcout << "Rt: " << (Rt.slice(t)).has_nan() << "\n";
       Rcout << "Qt: " << Qt << "\n";
+      Rcout << "res: " << arma::as_scalar(Ft.row(t-1)*Rt.slice(t)*arma::trans(Ft.row(t-1))) << "\n";
       Rcout << "St_tmp: " << St_tmp(t-1) << "\n";
       Rcout << "Ctm1: " << (Ct.slice(t-1)).has_nan() << "\n";
+      Rcout << "Rt is" << std::endl << Rt.slice(t) << std::endl;
+      Rcout << "Ft is" << std::endl << Ft.row(t-1) << std::endl;
     }
   }
   St = St_tmp.rows(1, N);
