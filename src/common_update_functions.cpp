@@ -23,11 +23,6 @@ void update_beta_mean(arma::vec& beta_mean,
     arma::mat tmp = (y - part2 - part1 + x.col(i) * beta_mean(i));
     beta_mean(i) = arma::as_scalar(sigma2_beta_mean(i) * (arma::sum(sigma2_inv % (tmp % x.col(i)))));
     beta2_mean(i) = arma::as_scalar(sigma2_beta_mean(i)) + arma::as_scalar(beta_mean(i)*beta_mean(i));
-    //Rcout << "beta mean sigma2: " << i << " index: " << arma::as_scalar(sigma2_beta_mean(i)) << "\n";
-    //Rcout << "tau2_inv: " << tau2_inv(i) << "\n";
-    //Rcout << "tmp: " << arma::sum(sigma2_inv%arma::square(x.col(i))) << "\n";
-    //Rcout << "sigma2_inv: " << arma::as_scalar(1/sigma2_inv.elem(arma::find_nonfinite(sigma2_inv))) << "\n";
-    //Rcout << "x_square: " << arma::sum(arma::square(x.col(i))) << "\n";
   }
   //std::for_each(beta_mean.begin(), beta_mean.end(), res_protector);
   //std::for_each(beta2_mean.begin(), beta2_mean.end(), res_protector);

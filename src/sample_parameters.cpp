@@ -21,23 +21,6 @@ void res_protector(double& x){
   }
 }
 
-double res_protector_return(double x){
-  if (std::abs(x) < DBL_MIN * std::pow(10, 10)){
-    double sign = std::copysign(1, x);
-    x = DBL_MIN * std::pow(10, 10) * sign;
-  }
-
-  if (std::abs(x) > DBL_MAX * std::pow(10, -30)){
-    double sign = std::copysign(1, x);
-    x = DBL_MAX * std::pow(10, -30) * sign;
-  }
-
-  if (std::isnan(x)){
-    x = 1;
-  }
-  return x;
-}
-
 
 void sample_beta_tilde(arma::mat& beta_nc_samp, arma::vec& y,
                        arma::mat& x, arma::vec& theta_sr,

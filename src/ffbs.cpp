@@ -32,10 +32,10 @@ void update_beta_tilde(arma::mat& beta_nc,
   arma::mat theta_sr_diag = arma::diagmat(theta_sr);
   arma::vec yt_star = y - x*beta_mean;
   arma::mat Ft = x*theta_sr_diag;
-  if(Ft.has_nan()){
-    Rcout << "Ft has nan!" << "\n";
-    Rcout << "theta_sr_diag: " << theta_sr_diag.has_nan() << "\n";
-  }
+  // if(Ft.has_nan()){
+  //   Rcout << "Ft has nan!" << "\n";
+  //   Rcout << "theta_sr_diag: " << theta_sr_diag.has_nan() << "\n";
+  // }
 
   arma::mat I_d = arma::eye(d, d);
   arma::vec ft(N, arma::fill::zeros);
@@ -62,34 +62,34 @@ void update_beta_tilde(arma::mat& beta_nc,
     et = yt_star(t-1) - ft(t-1);
     S_comp += St_sq * Qt_inv_sq * et * et * Qt_inv_sq * St_sq;
     St_tmp(t) = (n_0*S_0 + S_comp)/(n_0 + t);
-    if(std::isnan(St_tmp(t))){
-      Rcout << "t: " << t << "\n";
-      Rcout << "n_0*S_0: " << n_0*S_0 << "\n";
-      Rcout << "S_comp: " << S_comp << "\n";
-      Rcout << "St_tmp: " << St_tmp(t) << "\n";
-      Rcout << "Qt_inv_sq: " << Qt_inv_sq << "\n";
-      Rcout << "Qt: " << Qt << "\n";
-      Rcout << "rest: " << arma::as_scalar(Ft.row(t-1)*Rt.slice(t)*arma::trans(Ft.row(t-1))) << "\n";
-      Rcout << "Rt: " << (Rt.slice(t)).has_nan() << "\n";
-      Rcout << "Rtm1: " << (Rt.slice(t-1)).has_nan() << "\n";
-      Rcout << "Atm1: " << At.has_nan() << "\n";
-      Rcout << "Ctm1: " << (Ct.slice(t-1)).has_nan() << "\n";
-      break;
-    }
+    // if(std::isnan(St_tmp(t))){
+    //   Rcout << "t: " << t << "\n";
+    //   Rcout << "n_0*S_0: " << n_0*S_0 << "\n";
+    //   Rcout << "S_comp: " << S_comp << "\n";
+    //   Rcout << "St_tmp: " << St_tmp(t) << "\n";
+    //   Rcout << "Qt_inv_sq: " << Qt_inv_sq << "\n";
+    //   Rcout << "Qt: " << Qt << "\n";
+    //   Rcout << "rest: " << arma::as_scalar(Ft.row(t-1)*Rt.slice(t)*arma::trans(Ft.row(t-1))) << "\n";
+    //   Rcout << "Rt: " << (Rt.slice(t)).has_nan() << "\n";
+    //   Rcout << "Rtm1: " << (Rt.slice(t-1)).has_nan() << "\n";
+    //   Rcout << "Atm1: " << At.has_nan() << "\n";
+    //   Rcout << "Ctm1: " << (Ct.slice(t-1)).has_nan() << "\n";
+    //   break;
+    // }
     At = Rt.slice(t)*arma::trans(Ft.row(t-1))/Qt;
     mt.col(t) = mt.col(t-1) + At*et;
     Ct.slice(t) = Rt.slice(t) - At*Qt*arma::trans(At);
     Ct.slice(t) = 0.5*Ct.slice(t) + 0.5*arma::trans(Ct.slice(t));
-    if((Ct.slice(t)).has_nan()){
-      Rcout << "t: " << t << "\n";
-      Rcout << "Rt: " << (Rt.slice(t)).has_nan() << "\n";
-      Rcout << "Qt: " << Qt << "\n";
-      Rcout << "res: " << arma::as_scalar(Ft.row(t-1)*Rt.slice(t)*arma::trans(Ft.row(t-1))) << "\n";
-      Rcout << "St_tmp: " << St_tmp(t-1) << "\n";
-      Rcout << "Ctm1: " << (Ct.slice(t-1)).has_nan() << "\n";
-      Rcout << "Rt is" << std::endl << Rt.slice(t) << std::endl;
-      Rcout << "Ft is" << std::endl << Ft.row(t-1) << std::endl;
-    }
+    // if((Ct.slice(t)).has_nan()){
+    //   Rcout << "t: " << t << "\n";
+    //   Rcout << "Rt: " << (Rt.slice(t)).has_nan() << "\n";
+    //   Rcout << "Qt: " << Qt << "\n";
+    //   Rcout << "res: " << arma::as_scalar(Ft.row(t-1)*Rt.slice(t)*arma::trans(Ft.row(t-1))) << "\n";
+    //   Rcout << "St_tmp: " << St_tmp(t-1) << "\n";
+    //   Rcout << "Ctm1: " << (Ct.slice(t-1)).has_nan() << "\n";
+    //   Rcout << "Rt is" << std::endl << Rt.slice(t) << std::endl;
+    //   Rcout << "Ft is" << std::endl << Ft.row(t-1) << std::endl;
+    // }
   }
   St = St_tmp.rows(1, N);
   beta_nc.row(N) = arma::trans(mt.col(N));
@@ -122,23 +122,17 @@ void update_beta_tilde(arma::mat& beta_nc,
     //beta_nc_samp.col(t) = mT.col(t);
     if(t > 0){
       y(t-1) = arma::as_scalar(yt_star(t-1) - Ft.row(t-1)*arma::trans(beta_nc.row(t)));
-      if(std::abs(y(t-1)) > std::pow(10, 10)){
-        Rcout << "inner t:" << t << "\n";
-        Rcout << "Ft row: " << Ft.row(t-1) << "\n";
-        Rcout << "beta_nc: " << beta_nc.row(t) << "\n";
-        break;
-      }
     }
   }
 
-  std::for_each(y.begin(), y.end(), res_protector);
+  //std::for_each(y.begin(), y.end(), res_protector);
 
-  for(int t = 0; t < N; t++){
-    if(std::isnan(1/St(t))){
-      Rcout << "St" << t <<": " << St(t) << "\n";
-      break;
-    }
-  }
+  // for(int t = 0; t < N; t++){
+  //   if(std::isnan(1/St(t))){
+  //     Rcout << "St" << t <<": " << St(t) << "\n";
+  //     break;
+  //   }
+  // }
   //std::for_each(beta_nc.begin(), beta_nc.end(), res_protector);
   //std::for_each(beta2_nc.begin(), beta2_nc.end(), res_protector);
   //std::for_each(beta_nc_cov.begin(), beta_nc_cov.end(), res_protector);

@@ -767,12 +767,12 @@ List vi_shrinkTVP(arma::mat y_fwd,
           betaf_chol.slice(m-1).row(i) = (betaf_nc_chol_new.slice(m-1).row(i)) % arma::trans(thetaf_sr_chol_new.col(m-1)) + arma::trans(betaf_mean_chol_new.col(m-1));
           tmp_lower_triangular.elem(lower_indices) = betaf_chol.slice(m-1).row(i);
           yf.slice(m).row(i) = arma::trans(arma::inv(tmp_lower_triangular)*arma::trans(yf.slice(m).row(i)));
-          if(arma::any(arma::abs(yf.slice(m).row(i)) > std::pow(10, 10))){
-            Rcout << "iteration: " << i << "\n";
-            Rcout << "yf: " << yf.slice(m).row(i) << std::endl << "\n";
-            Rcout << "lower_triangular: " << arma::inv(tmp_lower_triangular) << std::endl << "\n";
-            break;
-          }
+          // if(arma::any(arma::abs(yf.slice(m).row(i)) > std::pow(10, 10))){
+          //   Rcout << "iteration: " << i << "\n";
+          //   Rcout << "yf: " << yf.slice(m).row(i) << std::endl << "\n";
+          //   Rcout << "lower_triangular: " << arma::inv(tmp_lower_triangular) << std::endl << "\n";
+          //   break;
+          // }
         }
         //backward part
         n_1 = 1;          // backward index
@@ -781,15 +781,15 @@ List vi_shrinkTVP(arma::mat y_fwd,
           betab_chol.slice(m-1).row(i) = (betab_nc_chol_new.slice(m-1).row(i)) % arma::trans(thetab_sr_chol_new.col(m-1)) + arma::trans(betab_mean_chol_new.col(m-1));
           tmp_lower_triangular.elem(lower_indices) = betab_chol.slice(m-1).row(i);
           yb.slice(m).row(i) = arma::trans(arma::inv(tmp_lower_triangular)*arma::trans(yb.slice(m).row(i)));
-          if(arma::any(arma::abs(yb.slice(m).row(i)) > std::pow(10, 10))){
-            Rcout << "iteration: " << i << "\n";
-            Rcout << "yb: " << yb.slice(m).row(i) << std::endl << "\n";
-            Rcout << "betab_nc_chol: " << (betab_nc_chol_old.slice(m-1).row(i)) << "\n";
-            Rcout << "thetab_sr_chol: " << arma::trans(thetab_sr_chol_old.col(m-1)) << "\n";
-            Rcout << "betab_mean_chol: " << arma::trans(betab_mean_chol_old.col(m-1)) << "\n";
-            Rcout << "lower_triangular: " << arma::inv(tmp_lower_triangular) << std::endl << "\n";
-            break;
-          }
+          // if(arma::any(arma::abs(yb.slice(m).row(i)) > std::pow(10, 10))){
+          //   Rcout << "iteration: " << i << "\n";
+          //   Rcout << "yb: " << yb.slice(m).row(i) << std::endl << "\n";
+          //   Rcout << "betab_nc_chol: " << (betab_nc_chol_old.slice(m-1).row(i)) << "\n";
+          //   Rcout << "thetab_sr_chol: " << arma::trans(thetab_sr_chol_old.col(m-1)) << "\n";
+          //   Rcout << "betab_mean_chol: " << arma::trans(betab_mean_chol_old.col(m-1)) << "\n";
+          //   Rcout << "lower_triangular: " << arma::inv(tmp_lower_triangular) << std::endl << "\n";
+          //   break;
+          // }
         }
       }
     }
