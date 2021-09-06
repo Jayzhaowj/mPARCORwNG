@@ -615,16 +615,16 @@ List vi_shrinkTVP(arma::mat y_fwd,
             xi2_inv_tmp = arma::vec(d_tmp, arma::fill::zeros);
 
             theta_sr_tmp(arma::span(0, d_tmp-2)) = thetab_sr_old.slice(m-1).col(k);
-            theta_sr_tmp(d_tmp-1) = thetaf_sr_chol_old(0, m-1);
+            theta_sr_tmp(d_tmp-1) = thetab_sr_chol_old(0, m-1);
 
             beta_mean_tmp(arma::span(0, d_tmp-2)) = betab_mean_old.slice(m-1).col(k);
-            beta_mean_tmp(d_tmp-1) = betaf_mean_chol_old(0, m-1);
+            beta_mean_tmp(d_tmp-1) = betab_mean_chol_old(0, m-1);
 
             tau2_inv_tmp(arma::span(0, d_tmp-2)) = tau2b_inv_old.slice(m-1).col(k);
-            tau2_inv_tmp(d_tmp-1) = tau2f_inv_chol_old(0, m-1);
+            tau2_inv_tmp(d_tmp-1) = tau2b_inv_chol_old(0, m-1);
 
             xi2_inv_tmp(arma::span(0, d_tmp-2)) = xi2b_inv_old.slice(m-1).col(k);
-            xi2_inv_tmp(d_tmp-1) = xi2f_inv_chol_old(0, m-1);
+            xi2_inv_tmp(d_tmp-1) = xi2b_inv_chol_old(0, m-1);
           }else if(k > 1){
             index = arma::sum(arma::linspace(1, k-1, k-1));
             theta_sr_tmp = arma::join_cols(theta_sr_tmp, thetab_sr_chol_old.col(m-1).rows(index, index+k-1));
