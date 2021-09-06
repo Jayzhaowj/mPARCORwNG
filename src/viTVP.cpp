@@ -774,8 +774,8 @@ List vi_shrinkTVP(arma::mat y_fwd,
       }
     }
 
-    std::for_each(yf.begin(), yf.end(), res_protector);
-    std::for_each(yb.begin(), yb.end(), res_protector);
+    //std::for_each(yf.begin(), yf.end(), res_protector);
+    //std::for_each(yb.begin(), yb.end(), res_protector);
 
     // update forward kappa2 and lambda2
     for(int k = 0; k < n_I; k++){
