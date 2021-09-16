@@ -1,4 +1,4 @@
-// [[Rcpp::depends(RcppArmadillo)]]
+#define ARMA_64BIT_WORD 1
 #include <RcppArmadillo.h>
 #include <Rcpp.h>
 #include <stochvol.h>
@@ -10,6 +10,8 @@
 #include "sample_parameters.h"
 using namespace Rcpp;
 
+// [[Rcpp::depends(RcppArmadillo)]]
+// [[Rcpp::plugins(cpp11)]]
 // [[Rcpp::export]]
 List vi_shrinkTVP(arma::mat y_fwd,
                   arma::mat y_bwd,
