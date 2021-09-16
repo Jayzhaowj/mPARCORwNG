@@ -14,8 +14,8 @@ vi_sPARCOR <- function(y, d, d1, d2, e1, e2, a_xi, a_tau, learn_a_xi, learn_a_ta
       tmp_dim <- dim(tmp)
       delta <- array(dim = c(tmp_dim[1], K^2, 1))
     }
-    result_skip <- run_parcor_parallel(F1 = t(y), delta = delta, P = 1, S_0 = S_0*diag(K),
-                                       DIC = FALSE, uncertainty = FALSE)
+    result_skip <- run_parcor(F1 = t(y), delta = delta, P = 1, S_0 = S_0*diag(K),
+                              DIC = FALSE, uncertainty = FALSE)
 
     result <- vi_shrinkTVP(y_fwd = t(result_skip$F1_fwd), y_bwd = t(result_skip$F1_bwd),
                            d = d, d1 = d1, d2 = d2, e1 = e1, e2 = e2,
