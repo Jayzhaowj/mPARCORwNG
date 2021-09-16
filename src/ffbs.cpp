@@ -1,10 +1,8 @@
-#define ARMA_64BIT_WORD 1
+// [Rcpp::depends(RcppArmadillo)]
 #include <RcppArmadillo.h>
 #include "sample_parameters.h"
 #include <math.h>
 
-// [Rcpp::depends(RcppArmadillo)]
-// [[Rcpp::plugins(cpp11)]]
 using namespace Rcpp;
 
 
