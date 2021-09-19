@@ -309,10 +309,10 @@ List vi_shrinkTVP(arma::mat y_fwd,
   arma::mat tau2f_inv_chol_new;
   arma::mat tau2b_inv_chol_new;
 
-  // definition temp lower triangular
-  arma::mat tmp_lower_triangular(n_I, n_I, arma::fill::eye);
+  // definition temp upper triangular
+  arma::mat tmp_upper_triangular(n_I, n_I, arma::fill::eye);
   arma::mat tmp_beta(n_I, n_I);
-  arma::uvec lower_indices = arma::trimatl_ind(size(tmp_lower_triangular), -1);
+  arma::uvec upper_indices = arma::trimatu_ind(size(tmp_upper_triangular), 1);
   arma::uvec all_indices = arma::linspace<arma::uvec>(0, n_I*n_I-1, n_I*n_I);
 
   if(!ind){
@@ -764,32 +764,19 @@ List vi_shrinkTVP(arma::mat y_fwd,
         n_1 = m + 1;
         n_T = N;
         for(int i = n_1-1; i < n_T; i++){
+          tmp_upper_triangular = arma::mat(n_I, n_I, arma::fill::eye);
           betaf_chol.slice(m-1).row(i) = (betaf_nc_chol_new.slice(m-1).row(i)) % arma::trans(thetaf_sr_chol_new.col(m-1)) + arma::trans(betaf_mean_chol_new.col(m-1));
-          tmp_lower_triangular.elem(lower_indices) = betaf_chol.slice(m-1).row(i);
-          yf.slice(m).row(i) = arma::trans(arma::inv(tmp_lower_triangular)*arma::trans(yf.slice(m).row(i)));
-          // if(arma::any(arma::abs(yf.slice(m).row(i)) > std::pow(10, 10))){
-          //   Rcout << "iteration: " << i << "\n";
-          //   Rcout << "yf: " << yf.slice(m).row(i) << std::endl << "\n";
-          //   Rcout << "lower_triangular: " << arma::inv(tmp_lower_triangular) << std::endl << "\n";
-          //   break;
-          // }
+          tmp_upper_triangular.elem(upper_indices) = betaf_chol.slice(m-1).row(i);
+          yf.slice(m).row(i) = arma::trans(arma::inv(tmp_upper_triangular.t())*arma::trans(yf.slice(m).row(i)));
         }
         //backward part
         n_1 = 1;          // backward index
         n_T = N - m;      // backward index
         for(int i = n_1-1; i < n_T; i++){
+          tmp_upper_triangular = arma::mat(n_I, n_I, arma::fill::eye);
           betab_chol.slice(m-1).row(i) = (betab_nc_chol_new.slice(m-1).row(i)) % arma::trans(thetab_sr_chol_new.col(m-1)) + arma::trans(betab_mean_chol_new.col(m-1));
-          tmp_lower_triangular.elem(lower_indices) = betab_chol.slice(m-1).row(i);
-          yb.slice(m).row(i) = arma::trans(arma::inv(tmp_lower_triangular)*arma::trans(yb.slice(m).row(i)));
-          // if(arma::any(arma::abs(yb.slice(m).row(i)) > std::pow(10, 10))){
-          //   Rcout << "iteration: " << i << "\n";
-          //   Rcout << "yb: " << yb.slice(m).row(i) << std::endl << "\n";
-          //   Rcout << "betab_nc_chol: " << (betab_nc_chol_old.slice(m-1).row(i)) << "\n";
-          //   Rcout << "thetab_sr_chol: " << arma::trans(thetab_sr_chol_old.col(m-1)) << "\n";
-          //   Rcout << "betab_mean_chol: " << arma::trans(betab_mean_chol_old.col(m-1)) << "\n";
-          //   Rcout << "lower_triangular: " << arma::inv(tmp_lower_triangular) << std::endl << "\n";
-          //   break;
-          // }
+          tmp_upper_triangular.elem(upper_indices) = betab_chol.slice(m-1).row(i);
+          yb.slice(m).row(i) = arma::trans(arma::inv(tmp_upper_triangular.t())*arma::trans(yb.slice(m).row(i)));
         }
       }
     }
@@ -1039,14 +1026,16 @@ List vi_shrinkTVP(arma::mat y_fwd,
       betab.slice(m).row(i) = (betab_nc_new.slice(m).row(i)) % arma::trans(arma::vectorise(thetab_sr_new.slice(m))) + arma::trans(arma::vectorise(betab_mean_new.slice(m)));
       if(!ind){
         // forward part
+        tmp_upper_triangular = arma::mat(n_I, n_I, arma::fill::eye);
         tmp_beta.elem(all_indices) = betaf.slice(m).row(i);
-        tmp_lower_triangular.elem(lower_indices) = betaf_chol.slice(m).row(i);
-        betaf.slice(m).row(i) = arma::trans(arma::vectorise(tmp_beta*arma::inv(arma::trans(tmp_lower_triangular))));
+        tmp_upper_triangular.elem(upper_indices) = betaf_chol.slice(m).row(i);
+        betaf.slice(m).row(i) = arma::trans(arma::vectorise(tmp_beta*arma::inv(tmp_upper_triangular)));
 
         // backward part
+        tmp_upper_triangular = arma::mat(n_I, n_I, arma::fill::eye);
         tmp_beta.elem(all_indices) = betab.slice(m).row(i);
-        tmp_lower_triangular.elem(lower_indices) = betab_chol.slice(m).row(i);
-        betab.slice(m).row(i) = arma::trans(arma::vectorise(tmp_beta*arma::inv(arma::trans(tmp_lower_triangular))));
+        tmp_upper_triangular.elem(upper_indices) = betab_chol.slice(m).row(i);
+        betab.slice(m).row(i) = arma::trans(arma::vectorise(tmp_beta*arma::inv(tmp_upper_triangular)));
       }
     }
   }

@@ -17,10 +17,10 @@ obtain_TVAR <- function(phi_fwd, phi_bwd, n_I, d){
 
 obtain_resid_var <- function(phi_chol_fwd, SIGMA, n_t, n_I, d){
   St <- array(NA, dim = c(n_I, n_I, n_t))
-  lower_tri <- diag(n_I)
+  upper_tri <- diag(n_I)
   for(i in 1:n_t){
-    lower_tri[lower.tri(lower_tri)] <- phi_chol_fwd[i, , d]
-    St[, , i] <- lower_tri %*% diag(SIGMA[n_t-d, ]) %*% t(lower_tri)
+    upper_tri[upper.tri(upper_tri)] <- phi_chol_fwd[i, , d]
+    St[, , i] <- t(upper_tri) %*% diag(SIGMA[n_t-d, ]) %*% upper_tri
   }
   return(St)
 }
