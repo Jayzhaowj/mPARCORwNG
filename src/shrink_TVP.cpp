@@ -711,6 +711,7 @@ List do_shrinkTVP(arma::mat y_fwd,
           yf.slice(m).row(i) = arma::trans(arma::inv(tmp_upper_triangular.t())*arma::trans(yf.slice(m).row(i)));
 
           // backward part
+          tmp_upper_triangular = arma::mat(n_I, n_I, arma::fill::eye);
           betab_chol_samp.slice(m-1).row(i) = betab_nc_chol_samp.slice(m-1).row(i) % arma::trans(thetab_sr_chol_samp.col(m-1)) + arma::trans(betab_mean_chol_samp.col(m-1));
           tmp_upper_triangular.elem(upper_indices) = betab_chol_samp.slice(m-1).row(i);
           yb.slice(m).row(i) = arma::trans(arma::inv(tmp_upper_triangular)*arma::trans(yb.slice(m).row(i)));
@@ -960,6 +961,7 @@ List do_shrinkTVP(arma::mat y_fwd,
             betaf_samp.slice(m).row(i) = arma::trans(arma::vectorise(tmp_beta * arma::inv(tmp_upper_triangular)));
 
             // backward part
+            tmp_upper_triangular = arma::mat(n_I, n_I, arma::fill::eye);
             tmp_beta.elem(all_indices) = betab_samp.slice(m).row(i);
             tmp_upper_triangular.elem(upper_indices) = betab_chol_samp.slice(m).row(i);
             betab_samp.slice(m).row(i) = arma::trans(arma::vectorise(tmp_beta * arma::inv(arma::trans(tmp_upper_triangular))));
