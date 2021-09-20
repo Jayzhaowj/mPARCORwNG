@@ -310,10 +310,17 @@ List vi_shrinkTVP(arma::mat y_fwd,
   arma::mat tau2b_inv_chol_new;
 
   // definition temp upper triangular
-  arma::mat tmp_upper_triangular(n_I, n_I, arma::fill::eye);
-  arma::mat tmp_beta(n_I, n_I);
-  arma::uvec upper_indices = arma::trimatu_ind(size(tmp_upper_triangular), 1);
-  arma::uvec all_indices = arma::linspace<arma::uvec>(0, n_I*n_I-1, n_I*n_I);
+  arma::mat tmp_upper_triangular;
+  arma::mat tmp_beta;
+  arma::uvec upper_indices;
+  arma::uvec all_indices;
+  if(n_I > 1){
+    tmp_upper_triangular = arma::mat(n_I, n_I, arma::fill::eye);
+    tmp_beta = arma::mat(n_I, n_I);
+    upper_indices = arma::trimatu_ind(size(tmp_upper_triangular), 1);
+    all_indices = arma::linspace<arma::uvec>(0, n_I*n_I-1, n_I*n_I);
+  }
+
 
   if(!ind){
     // definition of beta_tilde cholesky
@@ -461,8 +468,6 @@ List vi_shrinkTVP(arma::mat y_fwd,
 
           //(beta2f_nc_new.slice(m-1)).rows(n_1-1, n_T-1) = beta2_nc_tmp.rows(1, N_m);
           sigma2f_new.slice(m-1).col(k).rows(n_1-1, n_T-1) = sigma2_tmp;
-          yf.slice(m).col(k).rows(n_1-1, n_T-1) = y_tmp;
-          y_tmp = yf.slice(m-1).col(k).rows(n_1-1, n_T-1);
         } catch (...){
           //beta_nc_tmp.fill(arma::datum::nan);
           if (succesful == true){
@@ -571,6 +576,10 @@ List vi_shrinkTVP(arma::mat y_fwd,
             succesful = false;
           }
         }
+
+        // update forward prediction error
+        update_prediction_error(y_tmp, x_tmp, beta_nc_tmp, theta_sr_tmp, beta_mean_tmp, N_m);
+        yf.slice(m).col(k).rows(n_1-1, n_T-1) = y_tmp;
 
         // Backward
         // --------------------------------
@@ -756,6 +765,11 @@ List vi_shrinkTVP(arma::mat y_fwd,
             succesful = false;
           }
         }
+
+
+        // update backward prediction error
+        update_prediction_error(y_tmp, x_tmp, beta_nc_tmp, theta_sr_tmp, beta_mean_tmp, N_m);
+        yb.slice(m).col(k).rows(n_1-1, n_T-1) = y_tmp;
       }
 
       // transform back

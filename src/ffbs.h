@@ -10,4 +10,7 @@ void update_beta_tilde(arma::mat& beta_nc,
                        const double S_0,
                        arma::vec& St);
 
+void update_prediction_error(arma::vec& y, arma::mat& x, arma::mat& beta_nc,
+                                  const arma::vec& theta_sr,
+                                  const arma::vec& beta_mean, const int N);
 #endif

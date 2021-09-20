@@ -1,6 +1,5 @@
 // [Rcpp::depends(RcppArmadillo)]
 #include <RcppArmadillo.h>
-#include "sample_parameters.h"
 #include <math.h>
 
 using namespace Rcpp;
@@ -28,7 +27,7 @@ void update_beta_tilde(arma::mat& beta_nc,
   double St_sq;
   double S_comp = 0.0;
 
-  arma::colvec theta = arma::pow(theta_sr, 2);
+
   arma::mat theta_sr_diag = arma::diagmat(theta_sr);
   arma::vec yt_star = y - x*beta_mean;
   arma::mat Ft = x*theta_sr_diag;
@@ -120,9 +119,6 @@ void update_beta_tilde(arma::mat& beta_nc,
     tmp.diag().zeros();
     beta_nc_cov.row(t) = tmp;
     //beta_nc_samp.col(t) = mT.col(t);
-    if(t > 0){
-      y(t-1) = arma::as_scalar(yt_star(t-1) - Ft.row(t-1)*arma::trans(beta_nc.row(t)));
-    }
   }
 
   //std::for_each(y.begin(), y.end(), res_protector);
@@ -136,4 +132,16 @@ void update_beta_tilde(arma::mat& beta_nc,
   //std::for_each(beta_nc.begin(), beta_nc.end(), res_protector);
   //std::for_each(beta2_nc.begin(), beta2_nc.end(), res_protector);
   //std::for_each(beta_nc_cov.begin(), beta_nc_cov.end(), res_protector);
+}
+
+// [Rcpp::depends(RcppArmadillo)]
+void update_prediction_error(arma::vec& y, arma::mat& x, arma::mat& beta_nc,
+                                  const arma::vec& theta_sr,
+                                  const arma::vec& beta_mean, const int N){
+  arma::vec yt_star = y - x*beta_mean;
+  arma::mat theta_sr_diag = arma::diagmat(theta_sr);
+  arma::mat Ft = x*theta_sr_diag;
+  for(int t=1; t < N+1; t++){
+    y(t-1) = arma::as_scalar(yt_star(t-1) - Ft.row(t-1)*arma::trans(beta_nc.row(t)));
+  }
 }
