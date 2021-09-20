@@ -122,9 +122,6 @@ void sample_beta_tilde(arma::mat& beta_nc_samp, arma::vec& y,
     //   L_upper = L_upper_tmp.cols(piv);
     // }
     beta_nc_samp.row(t) = arma::trans(mT.col(t)) + eps * L_upper;
-    if(t > 0){
-      y(t-1) = arma::as_scalar(yt_star(t-1) - Ft.row(t-1)*arma::trans(beta_nc_samp.row(t)));
-    }
   }
 }
 

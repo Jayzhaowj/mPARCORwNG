@@ -408,8 +408,6 @@ List do_shrinkTVP(arma::mat y_fwd,
             }
           }
           SIGMAf_samp.slice(m-1).col(k).rows(n_1-1, n_T-1) = sigma2_tmp;
-          yf.slice(m).col(k).rows(n_1-1, n_T-1) = y_tmp;
-          y_tmp = yf.slice(m-1).col(k).rows(n_1-1, n_T-1);
         } catch (...){
           beta_nc_tmp.fill(nanl(""));
           if (succesful == true){
@@ -590,8 +588,6 @@ List do_shrinkTVP(arma::mat y_fwd,
             }
           }
           SIGMAb_samp.slice(m-1).col(k).rows(n_1-1, n_T-1) = sigma2_tmp;
-          yb.slice(m).col(k).rows(n_1-1, n_T-1) = y_tmp;
-          y_tmp = yb.slice(m-1).col(k).rows(n_1-1, n_T-1);
         } catch (...){
           beta_nc_tmp.fill(nanl(""));
           if (succesful == true){
